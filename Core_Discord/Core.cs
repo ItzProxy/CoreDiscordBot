@@ -26,11 +26,6 @@ namespace Core_Discord
         private InteractivityModule InteractivityService { get; }
         private Timer TimeGuard { get; set; }
 
-        /*
-         * Function Name: CoreBot 
-         * Purpose: Configure and start up a thread with a Discord bot with
-         * 
-         */
 
         public Core(CoreConfig config, int shardId)
         {

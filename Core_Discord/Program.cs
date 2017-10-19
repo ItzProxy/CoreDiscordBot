@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -9,10 +10,12 @@ namespace Core_Discord
 {
     internal sealed class Program
     {
+        List<Thread> KeepRunning;
         public static void Main(string[] arg)
         {
             try
             {
+                
                 MainAsync().Wait();
             }
             catch (Exception ex)
@@ -20,6 +23,10 @@ namespace Core_Discord
                 Console.WriteLine($"There was an exception: {ex.ToString()}");
             }
         }
+        /// <summary>
+        /// Provides the 
+        /// </summary>
+        /// <returns></returns>
         public static async Task MainAsync()
         {
             var config = new CoreConfig();
