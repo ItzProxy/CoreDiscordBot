@@ -87,7 +87,7 @@ namespace Core_Discord
             this.CommandsNextService.CommandErrored += this.CommandsNextService_CommandErrored;
             this.CommandsNextService.CommandExecuted += this.CommandsNextService_CommandExecuted;
 
-            this.CommandsNextService.RegisterCommands(typeof(Core).GetTypeInfo().Assembly);
+            this.CommandsNextService.RegisterCommands(typeof(CoreCommands).GetTypeInfo().Assembly);
             this.CommandsNextService.SetHelpFormatter<CoreBotHelpFormatter>();
 
             //interactive service
