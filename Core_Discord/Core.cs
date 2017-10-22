@@ -305,7 +305,7 @@ namespace Core_Discord
         {
             try
             {
-                this.Discord.UpdateStatusAsync(new DiscordGame("gitting better at API")).ConfigureAwait(false).GetAwaiter().GetResult();
+                this.Discord.UpdateStatusAsync(new DiscordGame("CS 476 Project")).ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (Exception) { }
         }
