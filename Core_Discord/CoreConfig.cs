@@ -8,7 +8,7 @@ namespace Core_Discord
         public string Token { get; private set; } = string.Empty;
 
         [JsonProperty("command_prefix")]
-        public string CommandPrefix { get; private set; } = "d#+";
+        public string CommandPrefix { get; private set; } = "!c";
 
         [JsonProperty("shards")]
         public int ShardCount { get; private set; } = 1;

@@ -24,7 +24,8 @@ namespace Core_Discord
             }
         }
         /// <summary>
-        /// Provides the 
+        /// Provides the main way to instaniate the bot
+        /// This will have to take in a List using a built in scheduler to make it possible to run multiple bots form one instance
         /// </summary>
         /// <returns></returns>
         public static async Task MainAsync()
