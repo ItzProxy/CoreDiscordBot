@@ -64,6 +64,9 @@ namespace Core_Discord
                 EnableIncoming = false
             };
 
+            //enable voice service
+            this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
+
             var depoBuild = new DependencyCollectionBuilder();
 
             //add dependency here
@@ -192,7 +195,7 @@ namespace Core_Discord
             return Task.Delay(0);
         }
         /// <summary>
-        /// 
+        /// Default message when bot is mentioned but no command specified
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
@@ -222,16 +225,33 @@ namespace Core_Discord
             return Task.Delay(0);
         }
         /// <summary>
-        /// 
+        /// Checks when a command returns an exception during execution of Task Command, if it failed due to error from the method
+        /// exception, builds an error report (generally this is for developers)
         /// </summary>
         /// <param name="e"></param>
-        /// <returns></returns>
+        /// <returns> Message with a exception text file built  </returns>
         private async Task CommandsNextService_CommandErrored(CommandErrorEventArgs e)
         {
             if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                 return;
 
             Discord.DebugLogger.LogMessage(LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+
+            if(e.Exception is UnauthorizedAccessException)
+            {
+                //check if user lacks permissions
+                //and provides notice
+
+                var errEmoji = DiscordEmoji.FromName(e.Context.Client,":no_entry:");
+
+                var embed = new DiscordEmbedBuilder
+                {
+                    Title = "Access Denied",
+                    Description = $"{errEmoji} You do not have permissions required to execute this command.",
+                    Color = new DiscordColor(0xFF0000) //red
+                };
+                await e.Context.RespondAsync("", embed: embed).ConfigureAwait(false);
+            }
 
             var exs = new List<Exception>();
             if (e.Exception is AggregateException ae)
@@ -253,6 +273,7 @@ namespace Core_Discord
                 writer.Flush();
                 stream.Position = 0;
 
+                //build the message to user
                 var embed = new DiscordEmbedBuilder
                 {
                     Color = new DiscordColor("#FF0000"),
@@ -266,7 +287,7 @@ namespace Core_Discord
             }
         }
         /// <summary>
-        /// 
+        /// Logs execution of command from user and from which channel in the Discord server
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>

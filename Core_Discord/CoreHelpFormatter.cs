@@ -7,18 +7,31 @@ using DSharpPlus.CommandsNext.Converters;
 using DSharpPlus.CommandsNext.Entities;
 
 namespace Core_Discord
-{
+{  
+    /// <summary>
+    /// Executes each method in a top down form when parsing any command using IHelpFormatter Interface
+    /// </summary>
     public sealed class CoreBotHelpFormatter : IHelpFormatter
     {
         private string _name = null, _desc = null, _args = null, _aliases = null, _subcs = null;
         private bool _gexec = false;
 
+        //borrowed from DSharpPlus Test Cases
+        /// <summary>
+        /// Gets the command name from attribute
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public IHelpFormatter WithCommandName(string name)
         {
             this._name = name;
             return this;
         }
-
+        /// <summary>
+        /// Gets the description attribute
+        /// </summary>
+        /// <param name="description"></param>
+        /// <returns></returns>
         public IHelpFormatter WithDescription(string description)
         {
             this._desc = string.IsNullOrWhiteSpace(description) ? null : description;
@@ -30,21 +43,33 @@ namespace Core_Discord
             this._gexec = true;
             return this;
         }
-
+        /// <summary>
+        /// Gets the alias attribute
+        /// </summary>
+        /// <param name="aliases"></param>
+        /// <returns></returns>
         public IHelpFormatter WithAliases(IEnumerable<string> aliases)
         {
             if (aliases.Any())
                 this._aliases = string.Join(", ", aliases);
             return this;
         }
-
+        /// <summary>
+        /// Gets number of arguments from method
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
         public IHelpFormatter WithArguments(IEnumerable<CommandArgument> arguments)
         {
             if (arguments.Any())
                 this._args = string.Join(", ", arguments.Select(xa => $"{xa.Name}: {xa.Type.ToUserFriendlyName()}"));
             return this;
         }
-
+        /// <summary>
+        /// Puts together all of the above methods into a string to be packaged out
+        /// </summary>
+        /// <param name="subcommands"></param>
+        /// <returns></returns>
         public IHelpFormatter WithSubcommands(IEnumerable<Command> subcommands)
         {
             if (subcommands.Any())
@@ -59,7 +84,11 @@ namespace Core_Discord
             }
             return this;
         }
-
+        /// <summary>
+        /// Builds the help menu using which takes all types of commands found in associated event
+        /// In Core.cs - provides the event hooks
+        /// </summary>
+        /// <returns></returns>
         public CommandHelpMessage Build()
         {
             var sb = new StringBuilder();
