@@ -28,10 +28,13 @@ namespace Core_Discord
         [Command("hello")]
         [Description("Says hello")]
         public async Task HelloWorld(CommandContext e, 
-            [Description("the mentioned user")] DiscordUser user)
+            [Description("the mentioned user")] DiscordUser user = null)
         {
             await e.TriggerTypingAsync();
-
+            if(user == null)
+            {
+                user = e.User;
+            }
             var server = e.Guild.Name;
             var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
 
@@ -112,7 +115,34 @@ namespace Core_Discord
             voiceConn = await vnext.ConnectAsync(chan).ConfigureAwait(false);
             await e.RespondAsync($"Connected to '{chan.Name}'");
         }
+        [Command("disconnect")]
+        [Description("Disconnect bot from current voice channel")]
+        [Aliases("dc")]
+        public async Task DisconnectVC(CommandContext e)
+        {
+            await e.RespondAsync($"Not implemented").ConfigureAwait(false);
+        }
+        [Command("leave")]
+        [Description("Bot leaves voice channel")]
+        [Aliases("bye")]
+        public async Task Leave(CommandContext e)
+        {
+            await e.RespondAsync($"Not implemented").ConfigureAwait(false);
+        }
+        [Command("invite")]
+        [Description("Create invite link")]
+        [Aliases("invlink")]
+        public async Task Invite(CommandContext e)
+        {
+            await e.RespondAsync($"Not implemented").ConfigureAwait(false);
+        }
+        [Command("Roll")]
+        [Description("Roll a multi dimensional dice - roll <max number of sides>")]
+        public async Task Roll(CommandContext e)
+        {
+            var arg = e.RawArgumentString;
 
-
+           await  e.RespondAsync($"here: ({arg})").ConfigureAwait(false);
+        }
     }
 }

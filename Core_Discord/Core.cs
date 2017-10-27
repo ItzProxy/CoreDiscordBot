@@ -68,6 +68,7 @@ namespace Core_Discord
             this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
 
             var depoBuild = new DependencyCollectionBuilder();
+            
 
             //add dependency here
 
@@ -98,13 +99,17 @@ namespace Core_Discord
             var interConfig = new InteractivityConfiguration()
             {
                 PaginationBehaviour = TimeoutBehaviour.Delete,
+                //default paginationtimeout (30 seconds)
                 PaginationTimeout = TimeSpan.FromSeconds(30),
-                Timeout = TimeSpan.FromSeconds(30)
+                //timeout for current action
+                Timeout = TimeSpan.FromMinutes(2) 
             };
 
             //attach interactive component
             this.InteractivityService = Discord.UseInteractivity(interConfig);
-
+            this.CommandsNextService.RegisterCommands<CoreInteractivityModuleCommands>();
+            //register commands from coreinteractivitymodulecommands
+            //this.CommandsNextService.RegisterCommands(typeof(CoreInteractivityModuleCommands).GetTypeInfo().Assembly); 
 
         }
 

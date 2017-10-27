@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Core_Discord
 {
-    class CoreMusic extends 
+    class CoreMusic  
     {
     }
 }
