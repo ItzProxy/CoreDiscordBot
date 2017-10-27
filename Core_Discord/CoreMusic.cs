@@ -7,9 +7,10 @@ using System.Text;
 /// Retooled to help play music through voice channel
 /// </summary>
 
-namespace Core_Discord
+namespace Core_Discord.Music
 {
-    class CoreMusic extends 
+    internal sealed class CoreMusic  
     {
+        private char x;
     }
 }

@@ -175,7 +175,7 @@ namespace Core_Discord
             return Task.Delay(0);
         }
         /// <summary>
-        /// 
+        /// Provides updates on console
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>

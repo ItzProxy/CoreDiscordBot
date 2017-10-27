@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,14 +29,20 @@ namespace Core_Discord
         [Command("hello")]
         [Description("Says hello")]
         public async Task HelloWorld(CommandContext e, 
-            [Description("the mentioned user")] DiscordUser user)
+            [Description("the mentioned user")] DiscordUser user = null)
         {
             await e.TriggerTypingAsync();
 
+            //check if user specified a person otherwise use self
+            if(user == null)
+            {
+                user = e.Member;
+            }
+            //gets the current server name that the bot is in
             var server = e.Guild.Name;
             var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
 
-            await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}").ConfigureAwait(false);
+            await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}!").ConfigureAwait(false);
         }
 
         public async Task HelloWorld(CommandContext e)
@@ -113,6 +120,41 @@ namespace Core_Discord
             await e.RespondAsync($"Connected to '{chan.Name}'");
         }
 
+        [Command("check")]
+        [Description("Checks permission of the user or another user")]
+        public async Task check(CommandContext e, DiscordMember user = null)
+        {
+            //if no user is specified, assume the person who mentioned the command
+            if(user == null)
+            {
+                user = e.Member;
+            }
 
+            //embed builder to make it look nice
+            var embed = new DiscordEmbedBuilder()
+            {
+                Title = $"User: {user.Username}",
+                Description = "Displays all permission that user has",
+                Timestamp = DateTime.Now,
+                Footer = new DiscordEmbedBuilder.EmbedFooter()
+                {
+                    Text = $"Built by CoreBot",
+                    IconUrl = $"{Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}origami.png"
+                },
+            };
+            Dictionary<DSharpPlus.Permissions, Boolean> test = new Dictionary<DSharpPlus.Permissions, bool>(); //creates a tuple 
+            var permissions = e.Channel.PermissionsFor(user);
+            foreach(var x in DSharpPlus.Permissions.)//Enum.GetValues(typeof(DSharpPlus.Permissions)))
+            {
+                if (permissions.Equals(x))
+                {
+
+                    test.Add(, true);
+                }
+            }
+            string response = permissions.ToString();
+
+            await e.RespondAsync(embed: embed).ConfigureAwait(false);
+        }
     }
 }
