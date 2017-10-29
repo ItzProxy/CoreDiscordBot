@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core_Discord", "Core_Discord\Core_Discord.csproj", "{4C6DFC93-FEC7-475A-ADB9-59948F3932B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project_Webserver", "Project_Webserver\Project_Webserver.csproj", "{A54F055C-957E-4846-ACBF-4E1826FC0BF5}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database1", "Database1\Database1.sqlproj", "{0366F91B-93CC-475E-984D-8A687DD0CE2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,16 @@ Global
 		{4C6DFC93-FEC7-475A-ADB9-59948F3932B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C6DFC93-FEC7-475A-ADB9-59948F3932B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C6DFC93-FEC7-475A-ADB9-59948F3932B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A54F055C-957E-4846-ACBF-4E1826FC0BF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A54F055C-957E-4846-ACBF-4E1826FC0BF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A54F055C-957E-4846-ACBF-4E1826FC0BF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A54F055C-957E-4846-ACBF-4E1826FC0BF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0366F91B-93CC-475E-984D-8A687DD0CE2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0366F91B-93CC-475E-984D-8A687DD0CE2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0366F91B-93CC-475E-984D-8A687DD0CE2A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{0366F91B-93CC-475E-984D-8A687DD0CE2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0366F91B-93CC-475E-984D-8A687DD0CE2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0366F91B-93CC-475E-984D-8A687DD0CE2A}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

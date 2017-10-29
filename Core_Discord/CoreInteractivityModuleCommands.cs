@@ -17,7 +17,7 @@ using DSharpPlus.VoiceNext;
 
 namespace Core_Discord
 {
-    public sealed class CoreInteractivityModuleCommands : CoreCommands
+    public sealed class CoreInteractivityModuleCommands : CoreCommandPoint
     {
         /// <summary>
         /// Taken from DsharpPlus Example Bot 3
@@ -26,7 +26,10 @@ namespace Core_Discord
         /// <param name="duration"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public async Task poll(CommandContext e, 
+        ///
+        [Command("poll")]
+        [Description("Creates a poll for users to use")]
+        private async Task Poll(CommandContext e, 
             [Description("How long should this poll last for?")] TimeSpan duration, 
             [Description("What are the options to chose from")] params DiscordEmoji[] options)
         {

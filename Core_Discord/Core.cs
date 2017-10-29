@@ -15,7 +15,7 @@ using System.IO;
 
 namespace Core_Discord
 {
-    internal sealed class Core
+    internal sealed class Core : CoreCommandPoint
     {
 
         private CoreConfig Config { get; set; }
@@ -68,7 +68,7 @@ namespace Core_Discord
             this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
 
             var depoBuild = new DependencyCollectionBuilder();
-            
+            depoBuild.Add<CoreInteractivityModuleCommands>();
 
             //add dependency here
 
@@ -91,7 +91,7 @@ namespace Core_Discord
             this.CommandsNextService.CommandErrored += this.CommandsNextService_CommandErrored;
             this.CommandsNextService.CommandExecuted += this.CommandsNextService_CommandExecuted;
 
-            this.CommandsNextService.RegisterCommands(typeof(CoreCommands).GetTypeInfo().Assembly);
+            this.CommandsNextService.RegisterCommands(typeof(CoreCommandPoint).GetTypeInfo().Assembly);
             this.CommandsNextService.SetHelpFormatter<CoreBotHelpFormatter>();
 
             //interactive service
