@@ -13,13 +13,15 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 using System.IO;
 
+
+
 namespace Core_Discord
 {
-    internal sealed class Core : CoreCommandPoint
+    public sealed class Core : CoreCommandPoint
     {
 
         private CoreConfig Config { get; set; }
-        private DiscordClient Discord;
+        private DiscordClient Discord { get; set; }
         private CoreCommands Commands { get; }
         private VoiceNextClient VoiceService { get; }
         private CommandsNextModule CommandsNextService { get; }

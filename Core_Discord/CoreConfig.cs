@@ -2,7 +2,7 @@
 
 namespace Core_Discord
 {
-    class CoreConfig
+    public sealed class CoreConfig
     {
         [JsonProperty("token")]
         public string Token { get; private set; } = string.Empty;

@@ -16,4 +16,8 @@
     <PackageReference Include="DSharpPlus.VoiceNext" Version="3.2.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Core\" />
+  </ItemGroup>
+
 </Project>
