@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,14 +32,11 @@ namespace Core_Discord
             [Description("the mentioned user")] DiscordUser user = null)
         {
             await e.TriggerTypingAsync();
-            if(user == null)
-            {
-                user = e.User;
-            }
+
             var server = e.Guild.Name;
             var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
 
-            await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}").ConfigureAwait(false);
+            await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}!").ConfigureAwait(false);
         }
 
         public async Task HelloWorld(CommandContext e)
@@ -115,83 +113,7 @@ namespace Core_Discord
             voiceConn = await vnext.ConnectAsync(chan).ConfigureAwait(false);
             await e.RespondAsync($"Connected to '{chan.Name}'");
         }
-        [Command("disconnect")]
-        [Description("Disconnect bot from current voice channel")]
-        [Aliases("dc")]
-        public async Task DisconnectVC(CommandContext e)
-        {
-            await e.RespondAsync($"Not implemented").ConfigureAwait(false);
-        }
-        [Command("leave")]
-        [Description("Bot leaves voice channel")]
-        [Aliases("bye")]
-        public async Task Leave(CommandContext e)
-        {
-            await e.RespondAsync($"Not implemented").ConfigureAwait(false);
-        }
-        [Command("invite")]
-        [Description("Create invite link")]
-        [Aliases("invlink")]
-        public async Task Invite(CommandContext e)
-        {
-            await e.RespondAsync($"Not implemented").ConfigureAwait(false);
-        }
-        [Command("Roll")]
-        [Description("Roll a multi dimensional dice - roll <max number of sides>")]
-        public async Task Roll(CommandContext e)
-        {
-            var arg = e.RawArgumentString;
-
-           await  e.RespondAsync($"here: ({arg})").ConfigureAwait(false);
-        }
 
 
-        /// <summary>
-        /// Taken from DsharpPlus Example Bot 3
-        /// </summary>
-        /// <param name="e"></param>
-        /// <param name="duration"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        ///
-        [Command("poll")]
-        [Description("Creates a poll for users to use")]
-        public async Task Poll(CommandContext e,
-            [Description("Poll title/question")] string title,
-            [Description("How long should this poll last for?")] TimeSpan duration,
-            [Description("What are the options to chose from")] params DiscordEmoji[] options)
-        {
-            //get the interactivity module from client
-            var inter = e.Client.GetInteractivityModule();
-            ///set poll options from parameters
-            var pollOptions = options.Select(op => op.ToString());
-
-            //new instance of discord embed builder
-            //Title - Poll
-            //Field = pollOptions array
-            var embed = new DiscordEmbedBuilder
-            {
-                Title = title,
-                Description = string.Join(" ", pollOptions)
-            };
-
-            embed.WithFooter(
-                "Time before over = " + duration
-                );
-            //send to discord application the embed
-            var msg = await e.RespondAsync(embed: embed);
-
-            //add option as reactions
-            for (int i = 0; i < options.Length; i++)
-            {
-                await msg.CreateReactionAsync(options[i]);
-            }
-
-            var pollResults = await inter.CollectReactionsAsync(msg, duration);
-            var results = pollResults.Reactions.Where(re => options.Contains(re.Key)).Select(re => $"{re.Key}: {re.Value}");
-
-            //post results
-            await e.RespondAsync(String.Join("The results/n", results));
-        }
     }
 }
