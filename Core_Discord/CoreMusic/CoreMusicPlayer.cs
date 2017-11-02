@@ -26,10 +26,13 @@ namespace Core_Discord.CoreMusic
         private readonly Thread _player;
         public VoiceNextClient VoiceChannel {get; private set;}
 
+        private CoreMusicQueue Queue;
+
         private TaskCompletionSource<bool> pauseTaskSource { get; set; } = null;
-        public float Volume { get; private set; } = 1.0f;
+        public bool Exited { get; set; } = false;
         public bool Stopped { get; private set; } = false;
-        public 
+        public float Volume { get; private set; } = 1.0f;
+        public bool Paused => pauseTaskSource != null;
 
         public string VolumeIcon => $"🔉 {(int)(Volume * 100)}%";
 

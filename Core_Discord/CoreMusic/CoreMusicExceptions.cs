@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Core_Discord.CoreMusic
 {
-    class CoreMusicExceptions
+    public class CoreMusicExceptions
     {
         public class NotInVOiceChannelException : Exception
         {
@@ -21,6 +21,12 @@ namespace Core_Discord.CoreMusic
         {
             public SongNotFoundException(string message) : base(message) { }
             public SongNotFoundException() : base("Song is not found") { }
+        }
+
+        public class SongNull : Exception
+        {
+            public SongNull(string message) : base(message) { }
+            public SongNull() : base("Song is invalid") { }
         }
     }
 }

@@ -9,8 +9,18 @@ using System.Text;
 
 namespace Core_Discord.Music
 {
-    internal sealed class CoreMusic  
+    public static class CoreMusicHelper  
     {
-        private char x;
+        /// <summary>
+        /// Taken from NadekoModuleExtension
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        public static void ThrowIfNull<T>(this T obj, string name) where T : class
+        {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(name));
+        }
     }
 }
