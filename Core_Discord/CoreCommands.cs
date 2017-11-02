@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,14 +29,14 @@ namespace Core_Discord
         [Command("hello")]
         [Description("Says hello")]
         public async Task HelloWorld(CommandContext e, 
-            [Description("the mentioned user")] DiscordUser user)
+            [Description("the mentioned user")] DiscordUser user = null)
         {
             await e.TriggerTypingAsync();
 
             var server = e.Guild.Name;
             var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
 
-            await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}").ConfigureAwait(false);
+            await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}!").ConfigureAwait(false);
         }
 
         public async Task HelloWorld(CommandContext e)
