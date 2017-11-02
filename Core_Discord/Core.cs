@@ -17,7 +17,7 @@ using System.IO;
 
 namespace Core_Discord
 {
-    public sealed class Core : CoreCommandPoint
+    public sealed class Core
     {
 
         private CoreConfig Config { get; set; }
@@ -93,7 +93,7 @@ namespace Core_Discord
             this.CommandsNextService.CommandErrored += this.CommandsNextService_CommandErrored;
             this.CommandsNextService.CommandExecuted += this.CommandsNextService_CommandExecuted;
 
-            this.CommandsNextService.RegisterCommands(typeof(CoreCommandPoint).GetTypeInfo().Assembly);
+            this.CommandsNextService.RegisterCommands(typeof(Core).GetTypeInfo().Assembly);
             this.CommandsNextService.SetHelpFormatter<CoreBotHelpFormatter>();
 
             //interactive service
@@ -109,7 +109,7 @@ namespace Core_Discord
 
             //attach interactive component
             this.InteractivityService = Discord.UseInteractivity(interConfig);
-            this.CommandsNextService.RegisterCommands<CoreInteractivityModuleCommands>();
+           //this.CommandsNextService.RegisterCommands<CoreInteractivityModuleCommands>();
             //register commands from coreinteractivitymodulecommands
             //this.CommandsNextService.RegisterCommands(typeof(CoreInteractivityModuleCommands).GetTypeInfo().Assembly); 
 

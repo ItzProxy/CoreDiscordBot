@@ -7,7 +7,7 @@ namespace Core_Discord.CoreMusic
 {
     public class CoreMusicQueue
     {
-        private LinkedList<MusicInfo> Songs { get; set } = new LinkedList<MusicInfo>(); //linked list
+        private LinkedList<MusicInfo> Songs { get; set; } = new LinkedList<MusicInfo>(); //linked list
         private int _currIndex = 0;
         public int CurrIndex //get amd set current index on thread
         {
@@ -17,7 +17,10 @@ namespace Core_Discord.CoreMusic
             }
             set
             {
-                lock(locker)
+                lock (locker)
+                {
+
+                }
             }
         }
         private readonly object locker = new object(); // semaphore
@@ -53,7 +56,7 @@ namespace Core_Discord.CoreMusic
         }
         public void Add(MusicInfo song)
         {
-            song.
+            
         }
     }
 }

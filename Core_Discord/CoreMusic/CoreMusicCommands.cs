@@ -12,9 +12,13 @@ namespace Core_Discord.CoreMusic
     [Group("music")]   
     public sealed class CoreMusicCommands
     {
-        private string requiredRoles = DiscordRole;
+        private string requiredRoles;
 
         [Command("Play")]
         [RequireRolesAttribute()]
+        public async Task Play(CommandContext e)
+        {
+            await e.RespondAsync($"Not yet implemented yet").ConfigureAwait(false);
+        }
     }
 }
