@@ -12,6 +12,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 using System.IO;
+using Core_Discord.CoreMusic;
 
 
 
@@ -70,7 +71,7 @@ namespace Core_Discord
             this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
 
             var depoBuild = new DependencyCollectionBuilder();
-            depoBuild.Add<CoreInteractivityModuleCommands>();
+            depoBuild.Add<CoreMusicPlayer>();
 
             //add dependency here
 

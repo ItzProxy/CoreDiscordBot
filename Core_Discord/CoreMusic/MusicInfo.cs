@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Core_Discord.CoreExtensions;
 using System.Text.RegularExpressions;
