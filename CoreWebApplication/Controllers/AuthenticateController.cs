@@ -13,6 +13,9 @@ namespace CoreWebApplication.Controllers
             return View();
         }
 
-        public Authenticate
+        public IActionResult Authenticate(string Token)
+        {
+            return View();
+        }
     }
 }
