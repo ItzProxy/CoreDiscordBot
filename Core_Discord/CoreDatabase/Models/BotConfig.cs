@@ -6,11 +6,15 @@ namespace Core_Discord.CoreDatabase.Models
 {
     public class BotConfig : DbEntity
     {
+        //size of file that bot will hold at one time
         public ulong BufferSize { get; set; } = 3500000; // 3.5 mb
+        //ability to 
         public bool ForwardMessages { get; set; } = true;
+        //permissions that bot has
         public int PermissionVersion { get; set; }
         public string DefaultPrefix { get; set; } = ".";
 
+        //
         public float CurrencyGenerationChance { get; set; } = 0.02f;
         public int CurrencyGeneration { get; set; } = 5;
         public List<PlayingStatus> RotatingPlayStatus = new List<PlayingStatus>();

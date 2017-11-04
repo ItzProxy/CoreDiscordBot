@@ -1,8 +1,14 @@
 ﻿using Core_Discord.CoreDatabase.Models;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Core_Discord.CoreDatabase.Repository.Implementation
 {
+    /// <summary>
+    /// borrowed from Nadeko Repository Implementation
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class Repository<T> : IRepository<T> where T : DbEntity
     {
         protected DbContext _context;
@@ -41,6 +47,4 @@ namespace Core_Discord.CoreDatabase.Repository.Implementation
         public void UpdateRange(params T[] objs) =>
             _set.UpdateRange(objs);
     }
-}
-
 }

@@ -3,19 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using System.Web;
+using Microsoft.AspNetCore.Authentication;
 
 namespace CoreWebApplication.Controllers
 {
     public class AuthenticateController : Controller
     {
-        public IActionResult Index()
+        public IActionResult DoChallenge()
         {
-            return View();
+            var authProperties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("Index", "Home")
+            };
+            return Challenge(authProperties, "Discord");
         }
 
-        public IActionResult Authenticate(string Token)
+        public IActionResult LoginDiscord()
         {
-            return View();
+            var authProperties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("Index", "Home")
+            };
+            return Challenge(authProperties, "Discord");
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Core_Discord.CoreMusic
 
         private readonly Thread _player;
         public VoiceNextClient VoiceChannel {get; private set;}
-        private readonly Logger
+        //logger
 
         private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
 

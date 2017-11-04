@@ -1,6 +1,11 @@
 import * as React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
+interface NavMenuProps {
+    isAuthenticated: boolean;
+    roles: string[];
+}
+
 export class NavMenu extends React.Component<{}, {}> {
     public render() {
         return <div className='main-nav'>
