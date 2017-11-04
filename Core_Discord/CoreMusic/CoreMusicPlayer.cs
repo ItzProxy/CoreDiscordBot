@@ -25,6 +25,7 @@ namespace Core_Discord.CoreMusic
 
         private readonly Thread _player;
         public VoiceNextClient VoiceChannel {get; private set;}
+        private readonly Logger
 
         private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
 
@@ -71,7 +72,9 @@ namespace Core_Discord.CoreMusic
 
         private bool cancel = false;
 
-
-        public CoreMusicPlayer(Music)
+        public CoreMusicPlayer(VoiceNextClient voice)
+        {
+            VoiceChannel = voice; //set voice channel up
+        }
     }
 }

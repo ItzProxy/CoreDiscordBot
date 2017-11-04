@@ -72,6 +72,7 @@ namespace Core_Discord
 
             var depoBuild = new DependencyCollectionBuilder();
             depoBuild.Add<CoreMusicPlayer>();
+           
 
             //add dependency here
 
