@@ -7,6 +7,7 @@ import { RouteComponentProps } from 'react-router';
 
 export class LoginDiscord extends React.Component<RouteComponentProps<{}>, {}> {
     public render() {
+        const isLoggedIn = this.state.IsLoggedIn;
         return <div>
             <Button
                 onPress={()=>}

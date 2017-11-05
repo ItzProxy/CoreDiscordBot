@@ -2,6 +2,10 @@
 
 namespace Core_Discord.CoreDatabase.Models
 {
+    /// <summary>
+    /// Essentially extends and stores DiscordUser from API with variables pertaining to this bot
+    /// Includes Exp details
+    /// </summary>
     public class DiscordUser : DbEntity
     {
         public ulong UserId { get; set; }

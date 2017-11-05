@@ -4,7 +4,8 @@ using System.Text;
 
 namespace Core_Discord.CoreDatabase
 {
-    class UnitOfWork
+    public class UnitOfWork
     {
+
     }
 }

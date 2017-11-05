@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Core_Discord.CoreDatabase.Models
 {
+    /// <summary>
+    /// encapsulates the local configuration of bot, this is different from the global configuration file (CoreConfig.cs)
+    /// </summary>
     public class ServerConfig : DbEntity
     {
         public ulong ServerId { get; set; }

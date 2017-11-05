@@ -14,7 +14,7 @@ namespace Core_Discord.CoreDatabase.Models
         public int PermissionVersion { get; set; }
         public string DefaultPrefix { get; set; } = ".";
 
-        //
+        //currency stuff...this is just the preliminary implementation
         public float CurrencyGenerationChance { get; set; } = 0.02f;
         public int CurrencyGeneration { get; set; } = 5;
         public List<PlayingStatus> RotatingPlayStatus = new List<PlayingStatus>();

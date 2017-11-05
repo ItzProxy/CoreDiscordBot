@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Core_Discord.CoreDatabase.Models
 {
+    /// <summary>
+    /// Provides the Music structure
+    /// </summary>
     public class PlaylistSong : DbEntity
     {
         public string Provider { get; set; }
@@ -12,7 +15,9 @@ namespace Core_Discord.CoreDatabase.Models
         public string Uri { get; set; }
         public string Query { get; set; }
     }
-
+    /// <summary>
+    /// Where the music came frome
+    /// </summary>
     public enum MusicType
     {
         YouTube,

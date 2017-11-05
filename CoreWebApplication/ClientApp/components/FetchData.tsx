@@ -20,7 +20,7 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
     }
 
     public render() {
-        let contents = this.state.loading
+        let contents = this.state.loading;
             ? <p><em>Loading...</em></p>
             : FetchData.renderForecastsTable(this.state.forecasts);
 
