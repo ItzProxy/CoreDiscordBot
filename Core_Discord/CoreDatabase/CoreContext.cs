@@ -12,7 +12,7 @@ namespace Core_Discord.CoreDatabase
 {
     public class CoreContextFactory : IDesignTimeDbContextFactory<CoreContext>
     {
-        public CoreContextFactory(string[] args)
+        public CoreContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<CoreContext>();
             var builder = new SqlConnectionStringBuilder("Data Source=data/Core_Discord.db");
@@ -91,8 +91,6 @@ namespace Core_Discord.CoreDatabase
             #region playlistUser
 
             var playlistUser = modelBuilder.Entity<PlaylistUser>();
-
-            
 
             #endregion
 
