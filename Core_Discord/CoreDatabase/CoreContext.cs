@@ -72,7 +72,7 @@ namespace Core_Discord.CoreDatabase
             #region BotConfig
             var botConfigEntity = modelBuilder.Entity<BotConfig>();
             botConfigEntity
-                .Property(m => m.ExMinutesTimeout)
+                .Property(m => m.ExpMinutesTimeout)
                 .HasDefaultValue(5);
 
             botConfigEntity.Property(m => m.ExpPerMessage)

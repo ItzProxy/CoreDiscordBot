@@ -9,7 +9,8 @@ using System;
 
 namespace Core_Discord.CoreMusic
 {
-    [Group("music")]   
+    [Group("music")]
+    [Description("Contains all music related commands")]
     public sealed class CoreMusicCommands
     {
         private string requiredRoles;

@@ -13,19 +13,21 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 using System.IO;
 using Core_Discord.CoreMusic;
-
+using Core_Discord.CoreServices;
+using Core_Discord.CoreDatabase;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace Core_Discord
 {
     public sealed class Core
     {
-
-        private CoreConfig Config { get; set; }
+        public CoreConfig Config { get; set; }
         private DiscordClient Discord { get; set; }
         private CoreCommands Commands { get; }
         private VoiceNextClient VoiceService { get; }
         private CommandsNextModule CommandsNextService { get; }
+        private DbService dbService { get; }
         private InteractivityModule InteractivityService { get; }
         private Timer TimeGuard { get; set; }
 
@@ -71,7 +73,6 @@ namespace Core_Discord
             this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
 
             var depoBuild = new DependencyCollectionBuilder();
-            depoBuild.Add<CoreMusicPlayer>();
            
 
             //add dependency here

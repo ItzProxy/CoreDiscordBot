@@ -5,7 +5,7 @@ using Core_Discord.CoreDatabase.Repository.Implementation;
 
 namespace Core_Discord.CoreDatabase
 {
-    public class UnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         public CoreContext _context { get; }
 

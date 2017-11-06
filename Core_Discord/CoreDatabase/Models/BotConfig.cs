@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+
 namespace Core_Discord.CoreDatabase.Models
 {
     public class BotConfig : DbEntity
@@ -32,7 +33,7 @@ namespace Core_Discord.CoreDatabase.Models
         
         //exp system
         public int ExpPerMessage { get; set; } = 3;
-        public int ExMinutesTimeout { get; set; } = 5;
+        public int ExpMinutesTimeout { get; set; } = 5;
     }
 
     public class PlayingStatus : DbEntity

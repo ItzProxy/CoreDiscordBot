@@ -15,7 +15,7 @@ namespace Core_Discord.CoreServices
     {
         private readonly DbContextOptions<CoreContext> options;
 
-        public DbService(IBotCredentials creds)
+        public DbService(ICoreCredentials creds)
         {
             //gets the database 
             var builder = new SqlConnectionStringBuilder(creds.Db.ConnectionString);

@@ -1,16 +1,15 @@
 ﻿using DSharpPlus;
 using System.Collections.Immutable;
 
+
 namespace Core_Discord.CoreServices.Interfaces
 {
-    public interface IBotCredentials
+    public interface ICoreCredentials
     {
         ulong ClientId { get; }
-
         string Token { get; }
 
         DBConfig Db { get; }
-
         bool IsOwner { get; }
         int TotalShards { get; }
     }
