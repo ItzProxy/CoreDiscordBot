@@ -23,7 +23,7 @@ namespace Core_Discord
     public sealed class Core
     {
         public CoreConfig Config { get; set; }
-        private DiscordClient Discord { get; set; }
+        public DiscordClient Discord { get; set; }
         private CoreCommands Commands { get; }
         private VoiceNextClient VoiceService { get; }
         private CommandsNextModule CommandsNextService { get; }
