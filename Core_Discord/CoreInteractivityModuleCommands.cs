@@ -17,7 +17,7 @@ using DSharpPlus.VoiceNext;
 
 namespace Core_Discord
 {
-    public sealed class CoreInteractivityModuleCommands : CoreCommandPoint
+    public sealed class CoreInteractivityModuleCommands 
     {
         /// <summary>
         /// Taken from DsharpPlus Example Bot 3

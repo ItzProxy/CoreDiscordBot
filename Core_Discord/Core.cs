@@ -12,19 +12,22 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 using System.IO;
-
+using Core_Discord.CoreMusic;
+using Core_Discord.CoreServices;
+using Core_Discord.CoreDatabase;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace Core_Discord
 {
-    public sealed class Core : CoreCommandPoint
+    public sealed class Core
     {
-
-        private CoreConfig Config { get; set; }
-        private DiscordClient Discord { get; set; }
+        public CoreConfig Config { get; set; }
+        public DiscordClient Discord { get; set; }
         private CoreCommands Commands { get; }
         private VoiceNextClient VoiceService { get; }
         private CommandsNextModule CommandsNextService { get; }
+        private DbService dbService { get; }
         private InteractivityModule InteractivityService { get; }
         private Timer TimeGuard { get; set; }
 
@@ -70,7 +73,7 @@ namespace Core_Discord
             this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
 
             var depoBuild = new DependencyCollectionBuilder();
-            depoBuild.Add<CoreInteractivityModuleCommands>();
+           
 
             //add dependency here
 
@@ -93,7 +96,7 @@ namespace Core_Discord
             this.CommandsNextService.CommandErrored += this.CommandsNextService_CommandErrored;
             this.CommandsNextService.CommandExecuted += this.CommandsNextService_CommandExecuted;
 
-            this.CommandsNextService.RegisterCommands(typeof(CoreCommandPoint).GetTypeInfo().Assembly);
+            this.CommandsNextService.RegisterCommands(typeof(Core).GetTypeInfo().Assembly);
             this.CommandsNextService.SetHelpFormatter<CoreBotHelpFormatter>();
 
             //interactive service
@@ -109,7 +112,7 @@ namespace Core_Discord
 
             //attach interactive component
             this.InteractivityService = Discord.UseInteractivity(interConfig);
-            this.CommandsNextService.RegisterCommands<CoreInteractivityModuleCommands>();
+           //this.CommandsNextService.RegisterCommands<CoreInteractivityModuleCommands>();
             //register commands from coreinteractivitymodulecommands
             //this.CommandsNextService.RegisterCommands(typeof(CoreInteractivityModuleCommands).GetTypeInfo().Assembly); 
 

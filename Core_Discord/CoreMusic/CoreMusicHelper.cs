@@ -9,8 +9,8 @@ using System.Text;
 
 namespace Core_Discord.Music
 {
-    internal sealed class CoreMusic  
+    public static class CoreMusicHelper  
     {
-        private char x;
+
     }
 }

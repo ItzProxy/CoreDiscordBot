@@ -113,7 +113,5 @@ namespace Core_Discord
             voiceConn = await vnext.ConnectAsync(chan).ConfigureAwait(false);
             await e.RespondAsync($"Connected to '{chan.Name}'");
         }
-
-
     }
 }
