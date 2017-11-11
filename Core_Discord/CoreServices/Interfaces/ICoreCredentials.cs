@@ -16,6 +16,7 @@ namespace Core_Discord.CoreServices.Interfaces
 
         bool IsOwner(DiscordUser u);
         int TotalShards { get; }
+        bool UseUserToken { get; } 
         string ShardRunCommand { get; }
         string ShardRunArguments { get; }
         RestartConfig RestartCommand { get; }

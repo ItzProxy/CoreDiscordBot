@@ -12,6 +12,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 using System.IO;
+using Core_Discord.CoreDatabase.Models;
 using Core_Discord.CoreMusic;
 using Core_Discord.CoreServices;
 using Core_Discord.CoreDatabase;
@@ -22,7 +23,10 @@ namespace Core_Discord
 {
     public sealed class Core
     {
-        public CoreConfig Config { get; set; }
+        private DebugLogger _log;
+
+        public CoreCredentials Credentials { get; set; }
+        private readonly BotConfig _config;
         public DiscordClient Discord { get; set; }
         private CoreCommands Commands { get; }
         private VoiceNextClient VoiceService { get; }
@@ -32,23 +36,30 @@ namespace Core_Discord
         private Timer TimeGuard { get; set; }
 
 
-        public Core(CoreConfig config, int shardId)
+        public Core(int ParentId, int shardId)
         {
-            this.Config = config;
+            if(shardId < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(shardId));
+            }
+
+            //set up credentials
+            Credentials = new CoreCredentials();
+            dbService = new DbService(Credentials);
 
             var coreConfig = new DiscordConfiguration
             {
                 AutoReconnect = true,
                 LargeThreshold = 250,
                 LogLevel = LogLevel.Debug,
-                Token = this.Config.Token,
-                TokenType = this.Config.UseUserToken ? TokenType.User : TokenType.Bot,
+                Token = Credentials.Token,
+                TokenType = Credentials.UseUserToken ? TokenType.User : TokenType.Bot,
                 UseInternalLogHandler = false,
                 ShardId = shardId,
-                ShardCount = this.Config.ShardCount,
+                ShardCount = Credentials.TotalShards,
                 EnableCompression = true,
                 MessageCacheSize = 50,
-                AutomaticGuildSync = !this.Config.UseUserToken,
+                AutomaticGuildSync = true,
                 DateTimeFormat = "dd-MM-yyyy HH:mm:ss zzz"
             };
 
@@ -73,7 +84,7 @@ namespace Core_Discord
             this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
 
             var depoBuild = new DependencyCollectionBuilder();
-           
+
 
             //add dependency here
 
@@ -82,12 +93,12 @@ namespace Core_Discord
             //see Dsharpplus configuration
             var commandConfig = new CommandsNextConfiguration
             {
-                StringPrefix = this.Config.CommandPrefix,
+                StringPrefix = _config.DefaultPrefix,
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 CaseSensitive = true,
                 Dependencies = depoBuild.Build(),
-                SelfBot = this.Config.UseUserToken,
+                SelfBot = this.Credentials.UseUserToken,
                 IgnoreExtraArguments = false
             };
 
@@ -180,7 +191,7 @@ namespace Core_Discord
         /// </returns>
         private Task Discord_Ready(ReadyEventArgs e)
         {
-            if (!this.Config.UseUserToken)
+            if (!this.Credentials.UseUserToken)
                 this.TimeGuard = new Timer(TimerCallback, null, TimeSpan.FromMinutes(0), TimeSpan.FromMinutes(15));
             return Task.Delay(0);
         }

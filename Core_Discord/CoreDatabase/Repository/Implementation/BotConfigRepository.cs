@@ -15,7 +15,22 @@ namespace Core_Discord.CoreDatabase.Repository.Implementation
 
         public BotConfig GetOrCreate(Func<DbSet<BotConfig>, IQueryable<BotConfig>> includes = null)
         {
-            throw new NotImplementedException();
+            BotConfig config;
+            if(includes == null)
+            {
+                config = _set.Include(c => c.RotatingPlayStatus)
+                    .FirstOrDefault();
+            }
+            else
+            {
+                config = includes(_set).FirstOrDefault();
+            }
+            if(config == null)
+            {
+                _set.Add(config = new BotConfig());
+                _context.SaveChanges();
+            }
+            return config;
         }
     }
 }

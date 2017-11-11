@@ -9,6 +9,7 @@ using System.IO;
 using System.Collections.Immutable;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
+using NLog;
 using Core_Discord;
 
 namespace Core_Discord.CoreServices
@@ -18,25 +19,27 @@ namespace Core_Discord.CoreServices
         //file where credentials are found and made
         private readonly string _credFileName = Path.Combine(Directory.GetCurrentDirectory(), "credentials.json");
 
-        private DebugLogger _log;
+        private DebugLogger _log = Discord
 
         public ulong ClientId { get; }
+        public string GoogleApiKey { get; }
+        public string SoundCloudClientId { get; }
         public string Token { get; }
-        public DBConfig Db { get; }
-
-        public string GoogleApiKey { get; set; } = "";
-        public string SoundCloudClientId { get; set; } = "";
 
         public ImmutableArray<ulong> OwnerIds { get; }
-        public bool IsOwner { get; }
+
+        public RestartConfig RestartCommand { get; }
+        public DBConfig Db { get; }
         public int TotalShards { get; }
+        public string CarbonKey { get; }
 
-        public string RestartCommand { get; set; } = null;
-        public string ShardRunCommand { get; set; } = "";
-        public string ShardRunArguments { get; set; } = "";
-        public int? ShardRunPort { get; set; } = null;
+        public string ShardRunCommand { get; }
+        public string ShardRunArguments { get; }
+        public int ShardRunPort { get; }
 
-        RestartConfig ICoreCredentials.RestartCommand { get; }
+        public string PatreonCampaignId { get; }
+
+        public bool UseUserToken { get; set; } = false;
 
         public CoreCredentials()
         {
@@ -82,14 +85,64 @@ namespace Core_Discord.CoreServices
                 SoundCloudClientId = data[nameof(SoundCloudClientId)];
                 ShardRunArguments = data[nameof(ShardRunArguments)];
                 ShardRunCommand = data[nameof(ShardRunCommand)];
+                UseUserToken =  Convert.ToBoolean(data[nameof(UseUserToken)]);
 
                 var restartSection = data.GetSection(nameof(RestartCommand));
                 var cmd = restartSection["cmd"];
+                var args = restartSection["args"];
+                if (!string.IsNullOrWhiteSpace(cmd))
+                {
+                    RestartCommand = new RestartConfig(cmd, args);
+                }
 
+                if (Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    if (string.IsNullOrWhiteSpace(ShardRunCommand))
+                        ShardRunCommand = "dotnet";
+                    if (string.IsNullOrWhiteSpace(ShardRunArguments))
+                        ShardRunArguments = "run -c Release -- {0} {1}";
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(ShardRunCommand))
+                        ShardRunCommand = "Core_Discord.exe";
+                    if (string.IsNullOrWhiteSpace(ShardRunArguments))
+                        ShardRunArguments = "{0} {1}";
+                }
+
+                //sets port of process
+                var port = data[nameof(ShardRunPort)];
+                if (string.IsNullOrWhiteSpace(port))
+                {
+                    ShardRunPort = new Random().Next(5000, 6000);
+                }
+                else
+                {
+                    ShardRunPort = int.Parse(port);
+                }
+
+                int ts = 1;
+                int.TryParse(data[nameof(TotalShards)], out ts);
+                TotalShards = ts < 1 ? 1 : ts;
+
+                ulong.TryParse(data[nameof(ClientId)], out ulong clId);
+                ClientId = clId;
+
+                var dbSection = data.GetSection("db");
+                Db = new DBConfig(string.IsNullOrWhiteSpace(dbSection["Type"])
+                                ? "sql"
+                                : dbSection["Type"],
+                            string.IsNullOrWhiteSpace(dbSection["ConnectionString"])
+                                ? "Data Source=data/CoreDB.db"
+                                : dbSection["ConnectionString"]);
             }
-            catch
+            catch (Exception e)
             {
-
+                _log.LogMessage(LogLevel.Critical,
+                    nameof(CoreCredentials),
+                    e.Message,
+                    DateTime.Now);
+                throw;
             }
         }
 
@@ -100,10 +153,11 @@ namespace Core_Discord.CoreServices
             public ulong[] OwnerIds { get; set; } = new ulong[1];
             public string GoogleApiKey { get; set; } = "";
             public string SoundCloudClientId { get; set; } = "";
-            public DBConfig Db { get; set; } = new DBConfig("sql", "Data Source=data/CoreDB.db");
+            public DBConfig Db { get; set; } = new DBConfig("sql", "Data Source=cs476project.database.windows.net");
             public int TotalShards { get; set; } = 1;
             public string RestartCommand { get; set; } = null;
 
+            public bool UseUserToken { get; set; } = false;
             public string ShardRunCommand { get; set; } = "";
             public string ShardRunArguments { get; set; } = "";
             public int? ShardRunPort { get; set; } = null;

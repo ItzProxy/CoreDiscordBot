@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace Core_Discord
 {
@@ -15,7 +16,6 @@ namespace Core_Discord
         {
             try
             {
-                
                 MainAsync().Wait();
             }
             catch (Exception ex)
@@ -30,6 +30,7 @@ namespace Core_Discord
         /// <returns></returns>
         public static async Task MainAsync()
         {
+
             var config = new CoreConfig();
             var json = string.Empty;
 
@@ -49,7 +50,7 @@ namespace Core_Discord
             var tasklist = new List<Task>();
             for(var i = 0; i < config.ShardCount; i++)
             {
-                var bot = new Core(config, i);
+                var bot = new Core(Process.GetCurrentProcess().Id, i);
                 tasklist.Add(bot.RunAsync());
             }
             await Task.WhenAll(tasklist).ConfigureAwait(false);
