@@ -17,13 +17,13 @@ using Core_Discord.CoreMusic;
 using Core_Discord.CoreServices;
 using Core_Discord.CoreDatabase;
 using Microsoft.Extensions.DependencyInjection;
-
+using NLog;
 
 namespace Core_Discord
 {
     public sealed class Core
     {
-        private DebugLogger _log;
+        private Logger _log;
 
         public CoreCredentials Credentials { get; set; }
         private readonly BotConfig _config;
@@ -38,12 +38,15 @@ namespace Core_Discord
 
         public Core(int ParentId, int shardId)
         {
+            //check if shardId assigned is < 0
             if(shardId < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(shardId));
             }
 
             //set up credentials
+            LogSetup.LoggerSetup(shardId);
+            _log = LogManager.GetCurrentClassLogger();
             Credentials = new CoreCredentials();
             dbService = new DbService(Credentials);
 
@@ -51,7 +54,7 @@ namespace Core_Discord
             {
                 AutoReconnect = true,
                 LargeThreshold = 250,
-                LogLevel = LogLevel.Debug,
+                LogLevel = DSharpPlus.LogLevel.Debug,
                 Token = Credentials.Token,
                 TokenType = Credentials.UseUserToken ? TokenType.User : TokenType.Bot,
                 UseInternalLogHandler = false,
@@ -156,20 +159,20 @@ namespace Core_Discord
 
             switch (e.Level)
             {
-                case LogLevel.Critical:
-                case LogLevel.Error:
+                case DSharpPlus.LogLevel.Critical:
+                case DSharpPlus.LogLevel.Error:
                     Console.ForegroundColor = ConsoleColor.Red;
                     break;
 
-                case LogLevel.Warning:
+                case DSharpPlus.LogLevel.Warning:
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     break;
 
-                case LogLevel.Info:
+                case DSharpPlus.LogLevel.Info:
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     break;
 
-                case LogLevel.Debug:
+                case DSharpPlus.LogLevel.Debug:
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     break;
 
@@ -202,7 +205,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_GuildAvailable(GuildCreateEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(LogLevel.Info, "DSPlus Test", $"Guild available: {e.Guild.Name}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild available: {e.Guild.Name}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -212,7 +215,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_GuildCreated(GuildCreateEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(LogLevel.Info, "DSPlus Test", $"Guild created: {e.Guild.Name}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild created: {e.Guild.Name}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -232,17 +235,17 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_ClientErrored(ClientErrorEventArgs e)
         {
-            this.Discord.DebugLogger.LogMessage(LogLevel.Error, "DSP Test", $"Client threw an exception: {e.Exception.GetType()}", DateTime.Now);
+            this.Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "DSP Test", $"Client threw an exception: {e.Exception.GetType()}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="e"></param>
-        /// <returns></returns>
+        /// <returns>Task</returns>
         private Task Discord_SocketError(SocketErrorEventArgs e)
         {
-            this.Discord.DebugLogger.LogMessage(LogLevel.Error, "WebSocket", $"WS threw an exception: {e.Exception.GetType()}", DateTime.Now);
+            this.Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "WebSocket", $"WS threw an exception: {e.Exception.GetType()}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -256,7 +259,7 @@ namespace Core_Discord
             if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                 return;
 
-            Discord.DebugLogger.LogMessage(LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 
             if(e.Exception is UnauthorizedAccessException)
             {
@@ -314,7 +317,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task CommandsNextService_CommandExecuted(CommandExecutionEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(LogLevel.Info, "CommandsNext", $"{e.Context.User.Username} executed '{e.Command.QualifiedName}' in {e.Context.Channel.Name}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "CommandsNext", $"{e.Context.User.Username} executed '{e.Command.QualifiedName}' in {e.Context.Channel.Name}", DateTime.Now);
             return Task.Delay(0);
         }
 

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json;
-using DSharpPlus;
 using DSharpPlus.Entities;
 using Core_Discord.CoreServices.Interfaces;
 using System.IO;
@@ -10,7 +7,7 @@ using System.Collections.Immutable;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using NLog;
-using Core_Discord;
+
 
 namespace Core_Discord.CoreServices
 {
@@ -19,7 +16,7 @@ namespace Core_Discord.CoreServices
         //file where credentials are found and made
         private readonly string _credFileName = Path.Combine(Directory.GetCurrentDirectory(), "credentials.json");
 
-        private DebugLogger _log = Discord
+        private Logger _log;
 
         public ulong ClientId { get; }
         public string GoogleApiKey { get; }
@@ -43,7 +40,8 @@ namespace Core_Discord.CoreServices
 
         public CoreCredentials()
         {
-            
+            _log = LogManager.GetCurrentClassLogger();
+
             try
             {
                 //create example if it doesn't exists
@@ -54,11 +52,11 @@ namespace Core_Discord.CoreServices
             if (!File.Exists(_credFileName))
             {
                 //create file
-                File.Create(Path.Combine(Directory.GetCurrentDirectory(), "credentials.json"));
-                _log.LogMessage(LogLevel.Info,
+                File.Create(Path.Combine(Directory.GetCurrentDirectory(), "credentials_example.json"));
+                _log.Warn((LogLevel.Info,
                     typeof(CoreCredentials).ToString(),
                     $"Credentials file is missing, a new one has been generated for you. Please fill it out...there is an example called {Path.GetFullPath("./credentials_example.json")}"
-                    , DateTime.Now);
+                    , DateTime.Now));
                 Console.ReadKey(); //cause a block and exit
                 return;
             }
@@ -66,17 +64,18 @@ namespace Core_Discord.CoreServices
             try
             {
                 var config = new ConfigurationBuilder();
-                config.AddJsonFile(_credFileName, true); //add new file
-                //.addenviromentalvariable("CoreDiscord_");
+                config.AddJsonFile(_credFileName, true) //add new file
+                .AddEnvironmentVariables("CoreDiscord_");
 
                 var data = config.Build();
 
+                Token = data[nameof(Token)];
                 if (string.IsNullOrWhiteSpace(Token))
                 {
-                    _log.LogMessage(LogLevel.Warning,
+                    _log.Warn((LogLevel.Warn,
                     typeof(CoreCredentials).ToString(),
                     $"Token is missing, please add it and restart program"
-                    ,DateTime.Now);
+                    ,DateTime.Now));
                     Console.ReadKey(); //cause a block and exit
                     Environment.Exit(3);
                 }
@@ -138,10 +137,10 @@ namespace Core_Discord.CoreServices
             }
             catch (Exception e)
             {
-                _log.LogMessage(LogLevel.Critical,
+                _log.Fatal((LogLevel.Fatal,
                     nameof(CoreCredentials),
                     e.Message,
-                    DateTime.Now);
+                    DateTime.Now));
                 throw;
             }
         }
@@ -153,7 +152,7 @@ namespace Core_Discord.CoreServices
             public ulong[] OwnerIds { get; set; } = new ulong[1];
             public string GoogleApiKey { get; set; } = "";
             public string SoundCloudClientId { get; set; } = "";
-            public DBConfig Db { get; set; } = new DBConfig("sql", "Data Source=cs476project.database.windows.net");
+            public DBConfig Db { get; set; } = new DBConfig("sql", "Data Source=tcp:cs476project.database.windows.net");
             public int TotalShards { get; set; } = 1;
             public string RestartCommand { get; set; } = null;
 
@@ -173,7 +172,7 @@ namespace Core_Discord.CoreServices
 
         bool ICoreCredentials.IsOwner(DiscordUser u)
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }
