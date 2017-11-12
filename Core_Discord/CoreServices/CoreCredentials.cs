@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using System.Linq;
 using NLog;
 
-
 namespace Core_Discord.CoreServices
 {
     public sealed class CoreCredentials : ICoreCredentials
@@ -45,17 +44,18 @@ namespace Core_Discord.CoreServices
             try
             {
                 //create example if it doesn't exists
-                File.WriteAllText("./credentials.json", JsonConvert.SerializeObject(new CoreCredentialModel(), Formatting.Indented));
+                File.WriteAllText("./credentials_example.json", JsonConvert.SerializeObject(new CoreCredentialModel(), Formatting.Indented));
             }
             catch { }
             //try if credentials exist
             if (!File.Exists(_credFileName))
             {
                 //create file
-                File.Create(Path.Combine(Directory.GetCurrentDirectory(), "credentials_example.json"));
+                //File.Create(Path.Combine(Directory.GetCurrentDirectory(), "credentials.json"));
+                File.WriteAllText("./credentials.json", JsonConvert.SerializeObject(new CoreCredentialModel(), Formatting.Indented));
                 _log.Warn((LogLevel.Info,
                     typeof(CoreCredentials).ToString(),
-                    $"Credentials file is missing, a new one has been generated for you. Please fill it out...there is an example called {Path.GetFullPath("./credentials_example.json")}"
+                    $"Credentials file is missing, a new one has been generated for you. Please fill it out...there is an example called \n{Path.GetFullPath("./credentials_example.json")}"
                     , DateTime.Now));
                 Console.ReadKey(); //cause a block and exit
                 return;
@@ -84,8 +84,7 @@ namespace Core_Discord.CoreServices
                 SoundCloudClientId = data[nameof(SoundCloudClientId)];
                 ShardRunArguments = data[nameof(ShardRunArguments)];
                 ShardRunCommand = data[nameof(ShardRunCommand)];
-                UseUserToken =  Convert.ToBoolean(data[nameof(UseUserToken)]);
-
+                UseUserToken = Convert.ToBoolean(data["UseUserToken"]);
                 var restartSection = data.GetSection(nameof(RestartCommand));
                 var cmd = restartSection["cmd"];
                 var args = restartSection["args"];

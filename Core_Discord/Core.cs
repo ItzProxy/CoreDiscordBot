@@ -46,6 +46,7 @@ namespace Core_Discord
 
             //set up credentials
             LogSetup.LoggerSetup(shardId);
+            _config = new BotConfig();
             _log = LogManager.GetCurrentClassLogger();
             Credentials = new CoreCredentials();
             dbService = new DbService(Credentials);
@@ -94,6 +95,7 @@ namespace Core_Discord
 
             //build command configuration
             //see Dsharpplus configuration
+            _log.Info($"{_config.DefaultPrefix}");
             var commandConfig = new CommandsNextConfiguration
             {
                 StringPrefix = _config.DefaultPrefix,
@@ -101,7 +103,7 @@ namespace Core_Discord
                 EnableMentionPrefix = true,
                 CaseSensitive = true,
                 Dependencies = depoBuild.Build(),
-                SelfBot = this.Credentials.UseUserToken,
+                SelfBot = Credentials.UseUserToken,
                 IgnoreExtraArguments = false
             };
 

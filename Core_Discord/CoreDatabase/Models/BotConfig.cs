@@ -17,7 +17,7 @@ namespace Core_Discord.CoreDatabase.Models
 
         //currency stuff...this is just the preliminary implementation
         public float CurrencyGenerationChance { get; set; } = 0.02f;
-        public int CurrencyGeneration { get; set; } = 5;
+        public int CurrencyGenerationCooldown { get; set; } = 5;
         public List<PlayingStatus> RotatingPlayStatus = new List<PlayingStatus>();
 
         public bool RotateStatus { get; set; } = false;
