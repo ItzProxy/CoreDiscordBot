@@ -15,7 +15,7 @@ namespace Core_Discord.CoreCommon
         HelpString,
         CurrencyDropAmount,
         CurrencyDropAmountMax,
-        XpPerMessage,
-        XpMinutesTimeout,
+        ExpPerMessage,
+        ExpMinutesTimeout,
     }
 }

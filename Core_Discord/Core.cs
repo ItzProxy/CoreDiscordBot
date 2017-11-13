@@ -50,7 +50,7 @@ namespace Core_Discord
             _log = LogManager.GetCurrentClassLogger();
             Credentials = new CoreCredentials();
             dbService = new DbService(Credentials);
-
+            _log.Info(Credentials.Token);
             var coreConfig = new DiscordConfiguration
             {
                 AutoReconnect = true,

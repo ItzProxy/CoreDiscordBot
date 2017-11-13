@@ -56,6 +56,30 @@ namespace Core_Discord.CoreServices
                     case CoreBotConfigEditType.CurrencySign:
                         b.CurrencyIcon = newValue ?? "~";
                         break;
+                    case CoreBotConfigEditType.CurrencyDropAmount:
+                        if(int.TryParse(newValue, out var amt) && amt > 0)
+                        {
+                            b.CurrencyDropAmount = amt;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                        break;
+                    case CoreBotConfigEditType.CurrencyDropAmountMax:
+                        if(newValue == null)
+                        {
+                            b.CurrencyMaxDropAmount = null;
+                        }
+                        else if(int.TryParse(newValue, out var cmax) && cmax > 0)
+                        {
+                            b.CurrencyMaxDropAmount = cmax;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                        break;
                     //case CoreBotConfigEditType.DmHelpString:
                     //    bc.DMHelpString = string.IsNullOrWhiteSpace(newValue)
                     //        ? "-"
@@ -66,11 +90,33 @@ namespace Core_Discord.CoreServices
                     //        ? "-"
                     //        : newValue;
                     //    break;
-                    case
+                    case CoreBotConfigEditType.ExpPerMessage:
+                        if(int.TryParse(newValue,out var xpm) && xpm > 0)
+                        {
+                            b.ExpPerMessage = xpm;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                        break;
+                    case CoreBotConfigEditType.ExpMinutesTimeout:
+                        if (int.TryParse(newValue, out var xpt) && xpt> 0)
+                        {
+                            b.ExpPerMessage = xpt;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                        break;
                     default:
                         return false;
                 }
+                BotConfig = b;
+                uow.Complete();
             }
+            return true; //any other response that somehow made it here, return as true
         }
 
         public void Reload()

@@ -29,7 +29,7 @@ namespace Core_Discord.CoreDatabase.Models
         
         //currency constraints for server
         public int CurrencyDropAmount = 10;
-        public int? MaxCurrencyDropAmount = null;
+        public int? CurrencyMaxDropAmount = null;
         
         //exp system
         public int ExpPerMessage { get; set; } = 3;
