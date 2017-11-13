@@ -16,7 +16,7 @@ namespace Core_Discord.CoreMusic
         private string requiredRoles;
 
         [Command("play")]
-        [g("")]
+        [Description("plays music of the given url")]
         public async Task Play(CommandContext e)
         {
             await e.RespondAsync($"Not yet implemented yet").ConfigureAwait(false);

@@ -27,7 +27,7 @@ namespace Core_Discord.CoreDatabase
     public class CoreContext : DbContext
     {
         public DbSet<BotConfig> BotConfig { get; set; }
-        public DbSet<ServerConfig> ServerConfig { get; set; }
+        public DbSet<GuildConfig> ServerConfig { get; set; }
         public DbSet<UserExpStats> UserExpStats { get; set; }
         public DbSet<ExpSettings> ExpSettings { get; set; }
         public DbSet<PlaylistUser> PlaylistUser { get; set; }
@@ -56,7 +56,7 @@ namespace Core_Discord.CoreDatabase
             /// 
             /// </summary>
             #region ServerConfig
-            var configEntity = modelBuilder.Entity<ServerConfig>();
+            var configEntity = modelBuilder.Entity<GuildConfig>();
             configEntity
                 .HasIndex(c => c.ServerId)
                 .IsUnique();
@@ -93,6 +93,24 @@ namespace Core_Discord.CoreDatabase
             var playlistUser = modelBuilder.Entity<PlaylistUser>();
 
             #endregion
+            #region DiscordUser
+            var dis = modelBuilder.Entity<DiscordUser>();
+            dis.HasAlternateKey(w => w.UserId);
+            modelBuilder.Entity<DiscordUser>()
+                .Property(x => x.LastLevelUp)
+                .HasDefaultValue(new DateTime(2017, 11, 13, 0, 0, 0, 0, DateTimeKind.Local));
+            #endregion
+
+            #region ExpSettings
+            modelBuilder.Entity<ExpSettings>()
+                .HasOne(x => x.GuildConfig)
+                .WithOne(x => x.ExpSettings);
+            #endregion
+
+            #region Permission
+
+            #endregion   
+
 
         }
     }

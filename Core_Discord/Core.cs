@@ -31,10 +31,9 @@ namespace Core_Discord
         private CoreCommands Commands { get; }
         private VoiceNextClient VoiceService { get; }
         private CommandsNextModule CommandsNextService { get; }
-        private DbService dbService { get; }
         private InteractivityModule InteractivityService { get; }
         private Timer TimeGuard { get; set; }
-
+        private readonly DbService _db;
 
         public Core(int ParentId, int shardId)
         {
@@ -49,7 +48,7 @@ namespace Core_Discord
             _config = new BotConfig();
             _log = LogManager.GetCurrentClassLogger();
             Credentials = new CoreCredentials();
-            dbService = new DbService(Credentials);
+            _db = new DbService(Credentials);
             _log.Info(Credentials.Token);
             var coreConfig = new DiscordConfiguration
             {
@@ -92,7 +91,10 @@ namespace Core_Discord
 
             //add dependency here
 
-
+            using(var uow = _db.UnitOfWork)
+            {
+                _config = uow.BotConfig.GetOrCreate();
+            }
             //build command configuration
             //see Dsharpplus configuration
             _log.Info($"{_config.DefaultPrefix}");
