@@ -6,11 +6,11 @@ namespace Core_Discord.CoreServices.Interfaces
 {
     public interface ICoreCredentials
     {
-        ulong ClientId { get; }
+        long ClientId { get; }
 
         string Token { get; }
         string GoogleApiKey { get; }
-        ImmutableArray<ulong> OwnerIds { get; }
+        ImmutableArray<long> OwnerIds { get; }
 
         DBConfig Db { get; }
 

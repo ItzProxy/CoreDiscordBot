@@ -18,6 +18,7 @@ using Core_Discord.CoreServices;
 using Core_Discord.CoreDatabase;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using System.Data.SqlClient;
 
 namespace Core_Discord
 {
@@ -50,6 +51,7 @@ namespace Core_Discord
             Credentials = new CoreCredentials();
             _db = new DbService(Credentials);
             _log.Info(Credentials.Token);
+            bool check = IsServerConnected();
             var coreConfig = new DiscordConfiguration
             {
                 AutoReconnect = true,
@@ -336,6 +338,24 @@ namespace Core_Discord
                 this.Discord.UpdateStatusAsync(new DiscordGame("CS 476 Project")).ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (Exception) { }
+        }
+
+        public bool IsServerConnected()
+        {
+            SqlConnectionStringBuilder x = new SqlConnectionStringBuilder("Server=tcp:cs476project.database.windows.net,1433;Initial Catalog=CoreDiscord;Persist Security Info=False;User ID=dpasion;Password=forsaken1!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+            using (var l_oConnection = new SqlConnection(x.ConnectionString))
+            {
+                try
+                {
+                    l_oConnection.Open();
+                    return true;
+                }
+                catch (SqlException e)
+                {
+                    _log.Info(e.Message);
+                    return false;
+                }
+            }
         }
     }
 }

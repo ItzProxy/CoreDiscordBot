@@ -8,7 +8,7 @@ namespace Core_Discord.CoreDatabase.Models
     public class BotConfig : DbEntity
     {
         //size of file that bot will hold at one time
-        public ulong BufferSize { get; set; } = 3500000; // 3.5 mb
+        public long BufferSize { get; set; } = 3500000; // 3.5 mb
         //ability to 
         public bool ForwardMessages { get; set; } = true;
         //permissions that bot has

@@ -6,14 +6,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 namespace Core_Discord
 {
     internal sealed class Program
     {
+        static public IConfigurationRoot Configuration { get; set; }
         List<Thread> KeepRunning;
         public static void Main(string[] arg)
         {
+            var builder = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json");
+
+            Configuration = builder.Build();
             try
             {
                 MainAsync().Wait();

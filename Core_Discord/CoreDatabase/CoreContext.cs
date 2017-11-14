@@ -31,7 +31,7 @@ namespace Core_Discord.CoreDatabase
         public DbSet<UserExpStats> UserExpStats { get; set; }
         public DbSet<ExpSettings> ExpSettings { get; set; }
         public DbSet<PlaylistUser> PlaylistUser { get; set; }
-        public DbSet<PlaylistSong> PlaylistSong { get; set; }
+        //public DbSet<PlaylistSong> PlaylistSong { get; set; }
 
         //constructor
         public CoreContext(DbContextOptions<CoreContext> options) : base(options)
@@ -90,7 +90,11 @@ namespace Core_Discord.CoreDatabase
             /// </summary>
             #region playlistUser
 
-            var playlistUser = modelBuilder.Entity<PlaylistUser>();
+            var pluEntity = modelBuilder.Entity<PlaylistUser>();
+            pluEntity
+                .HasMany(x => x.Songs)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
 
             #endregion
             #region DiscordUser

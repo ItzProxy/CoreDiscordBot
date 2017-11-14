@@ -52,6 +52,7 @@ namespace Core_Discord.CoreServices
             }
             return context;
         }
-        public IUnitOfWork UnitOfWork => new UnitOfWork(GetDbCoreContext());
+        public IUnitOfWork UnitOfWork { get =>
+             new UnitOfWork(GetDbCoreContext()); }
     }
 }
