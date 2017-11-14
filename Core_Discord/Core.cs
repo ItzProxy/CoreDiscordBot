@@ -19,6 +19,7 @@ using Core_Discord.CoreDatabase;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace Core_Discord
 {
@@ -347,7 +348,17 @@ namespace Core_Discord
             {
                 try
                 {
-                    l_oConnection.Open();
+                    SqlDataReader read;
+                    SqlCommand cmd = new SqlCommand();
+                    cmd.CommandText = "SELECT * FROM dbo.Parts";
+                    cmd.CommandType = System.Data.CommandType.Text;
+                    cmd.Connection = l_oConnection;
+                    cmd.Connection.Open();
+                    read = cmd.ExecuteReader();
+                    while (read.Read())
+                    {
+                        Console.WriteLine(String.Format("{0} {1}", read[0], read[1]));
+                    }
                     return true;
                 }
                 catch (SqlException e)
