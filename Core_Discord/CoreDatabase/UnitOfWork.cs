@@ -33,11 +33,11 @@ namespace Core_Discord.CoreDatabase
 
         private bool disposed = false;
 
-        protected void Disposed(bool disposin)
+        protected void Disposed(bool dispose)
         {
             if (!this.disposed)
             {
-                if (disposin)
+                if (dispose)
                 {
                     _context.Dispose();
                 }

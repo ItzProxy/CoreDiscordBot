@@ -1,0 +1,42 @@
+Test Cases:
+Core.cs
+Able to invite bot to server via invite link - 
+	-Should be invited and be called Test-bot#... in invited server
+	-Asks which permissions are required
+	-In console, the server that invited the bot should show up
+		-Restart bot	
+			-All servers that invited the bot should show
+
+Able to use commands
+	-Check all available commands
+		.help
+			-Procures a list of available commands for the bot
+			-Check if any commands are missing
+		.join
+			-Bot joins voice channel that user is in
+			-If user that used .join is not in a voice channel an error occurs
+				-message: "user is not in a voice channel"
+
+Able to create database
+	-Requirements: 
+		-Connection string is to an SQL server
+		-Database is a valid SQL database (connection is successful)
+		-Database does not have previous tables (unless migrating) from Core_DiscordBot
+	-Creates all tables required
+	-If requirements are not met, error will happen saying connection not available and series of exceptions
+
+Web GUI
+	-Able to authenticate using Discord OAuth2 protocol
+		-Requires a valid discord account
+	-When authenticated, information such as username, and servers you have joined are available
+		-This will show no servers if you haven't joined one yet
+	-Able to click through all servers that you are in and are server admin of or have permissions akin to server admin
+		-If user has no servers then this table will show empty with an error saying - Make or join a server that will give you admin permissions
+	-Able to see statistics regarding the selected server
+		-Must have a server with this bot invited
+			-Shows 0 for all columns if it does not appear in database
+		-Clicking the statistics window on the middle left column changes center column that lets user see all statistically saved variables
+	-Able to see configurations of their server
+		-Able to change server specific configurations
+		-Assumes, server admin of server and you know what you're doing
+			-There is some fail safes such as out of range exceptions and boundary exceptions

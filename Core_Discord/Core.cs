@@ -343,7 +343,7 @@ namespace Core_Discord
 
         public bool IsServerConnected()
         {
-            SqlConnectionStringBuilder x = new SqlConnectionStringBuilder("Server=tcp:cs476project.database.windows.net,1433;Initial Catalog=CoreDiscord;Persist Security Info=False;User ID=dpasion;Password=forsaken1!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+            SqlConnectionStringBuilder x = new SqlConnectionStringBuilder("Data Source=cs476project.database.windows.net;Initial Catalog=CoreDiscord;Integrated Security=False;User ID=dpasion;Password=forsaken1!;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
             using (var l_oConnection = new SqlConnection(x.ConnectionString))
             {
                 try
