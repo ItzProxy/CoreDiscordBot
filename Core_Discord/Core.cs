@@ -94,7 +94,7 @@ namespace Core_Discord
 
             //add dependency here
 
-            using(var uow = _db.UnitOfWork)
+            using (var uow = _db.UnitOfWork)
             {
                 _config = uow.BotConfig.GetOrCreate();
             }

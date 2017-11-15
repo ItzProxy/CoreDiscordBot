@@ -13,7 +13,6 @@ namespace Core_Discord
     internal sealed class Program
     {
         static public IConfigurationRoot Configuration { get; set; }
-        List<Thread> KeepRunning;
         public static void Main(string[] arg)
         {
             var builder = new ConfigurationBuilder()
