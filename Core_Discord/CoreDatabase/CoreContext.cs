@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq;
 using System;
-using Core_Discord.CoreExtensions;
 using Core_Discord.CoreDatabase.Models;
 using Microsoft.EntityFrameworkCore.Design;
 using System.Data.SqlClient;
@@ -26,25 +24,26 @@ namespace Core_Discord.CoreDatabase
 
     public class CoreContext : DbContext
     {
-        public DbSet<BotConfig> BotConfig { get; set; }
-        public DbSet<GuildConfig> ServerConfig { get; set; }
-        public DbSet<UserExpStats> UserExpStats { get; set; }
-        public DbSet<ExpSettings> ExpSettings { get; set; }
-        public DbSet<PlaylistUser> PlaylistUser { get; set; }
-        public DbSet<PlaylistSong> PlaylistSong { get; set; }
+        public virtual DbSet<BotConfig> BotConfig { get; set; }
+        public virtual DbSet<GuildConfig> ServerConfig { get; set; }
+        public virtual DbSet<UserExpStats> UserExpStats { get; set; }
+        public virtual DbSet<ExpSettings> ExpSettings { get; set; }
+        public virtual DbSet<PlaylistUser> PlaylistUser { get; set; }
+        public virtual DbSet<LoadedPackage> LoadedPackages { get; set; }
+        //public DbSet<PlaylistSong> PlaylistSong { get; set; }
 
         //constructor
         public CoreContext(DbContextOptions<CoreContext> options) : base(options)
         {
         }
 
-        public void EnsureSeeData()
+        public void EnsureSeedData()
         {
             if (!BotConfig.Any())
             {
                 var botc = new BotConfig();
                 BotConfig.Add(botc);
-                this.SaveChanges();
+                SaveChanges();
             }
         }
 
@@ -55,7 +54,16 @@ namespace Core_Discord.CoreDatabase
             /// Creates a table in sql for serverconfig
             /// 
             /// </summary>
-            #region ServerConfig
+            #region GuildConfig
+            //modelBuilder.Entity<GuildConfig>(entity =>
+            //{
+            //    entity.ToTable("core_discord_config");
+            //    entity.HasIndex(e => e.Id)
+            //    .HasName("guild_config_id")
+            //    .IsUnique();
+
+            //    entity
+            //});
             var configEntity = modelBuilder.Entity<GuildConfig>();
             configEntity
                 .HasIndex(c => c.ServerId)
@@ -70,11 +78,12 @@ namespace Core_Discord.CoreDatabase
             /// 
             /// </summary>
             #region BotConfig
+
+     
             var botConfigEntity = modelBuilder.Entity<BotConfig>();
             botConfigEntity
                 .Property(m => m.ExpMinutesTimeout)
                 .HasDefaultValue(5);
-
             botConfigEntity.Property(m => m.ExpPerMessage)
                 .HasDefaultValue(3);
             #endregion
@@ -90,7 +99,11 @@ namespace Core_Discord.CoreDatabase
             /// </summary>
             #region playlistUser
 
-            var playlistUser = modelBuilder.Entity<PlaylistUser>();
+            var pluEntity = modelBuilder.Entity<PlaylistUser>();
+            pluEntity
+                .HasMany(x => x.Songs)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
 
             #endregion
             #region DiscordUser

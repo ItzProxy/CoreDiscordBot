@@ -17,12 +17,12 @@ namespace Core_Discord.CoreServices
 
         private Logger _log;
 
-        public ulong ClientId { get; }
+        public long ClientId { get; }
         public string GoogleApiKey { get; }
         public string SoundCloudClientId { get; }
         public string Token { get; }
 
-        public ImmutableArray<ulong> OwnerIds { get; }
+        public ImmutableArray<long> OwnerIds { get; }
 
         public RestartConfig RestartCommand { get; }
         public DBConfig Db { get; }
@@ -79,7 +79,7 @@ namespace Core_Discord.CoreServices
                     Console.ReadKey(); //cause a block and exit
                     Environment.Exit(3);
                 }
-                OwnerIds = data.GetSection("OwnerIds").GetChildren().Select(m => ulong.Parse(m.Value)).ToImmutableArray();
+                OwnerIds = data.GetSection("OwnerIds").GetChildren().Select(m => long.Parse(m.Value)).ToImmutableArray();
                 GoogleApiKey = data[nameof(GoogleApiKey)];
                 SoundCloudClientId = data[nameof(SoundCloudClientId)];
                 ShardRunArguments = data[nameof(ShardRunArguments)];
@@ -123,16 +123,18 @@ namespace Core_Discord.CoreServices
                 int.TryParse(data[nameof(TotalShards)], out ts);
                 TotalShards = ts < 1 ? 1 : ts;
 
-                ulong.TryParse(data[nameof(ClientId)], out ulong clId);
+                long.TryParse(data[nameof(ClientId)], out long clId);
                 ClientId = clId;
 
                 var dbSection = data.GetSection("db");
+                //_log.Info(dbSection["ConnectionString"]); //debug purpose
                 Db = new DBConfig(string.IsNullOrWhiteSpace(dbSection["Type"])
                                 ? "sql"
                                 : dbSection["Type"],
                             string.IsNullOrWhiteSpace(dbSection["ConnectionString"])
                                 ? "Data Source=data/CoreDB.db"
                                 : dbSection["ConnectionString"]);
+                _log.Info(Db.ConnectionString);
             }
             catch (Exception e)
             {
@@ -146,9 +148,9 @@ namespace Core_Discord.CoreServices
 
         private class CoreCredentialModel
         {
-            public ulong ClientId { get; set; } = 123123123;
+            public long ClientId { get; set; } = 123123123;
             public string Token { get; set; } = "";
-            public ulong[] OwnerIds { get; set; } = new ulong[1];
+            public long[] OwnerIds { get; set; } = new long[1];
             public string GoogleApiKey { get; set; } = "";
             public string SoundCloudClientId { get; set; } = "";
             public DBConfig Db { get; set; } = new DBConfig("sql", "Data Source=tcp:cs476project.database.windows.net");
@@ -167,7 +169,7 @@ namespace Core_Discord.CoreServices
             public string ConnectionString { get; set; }
         }
 
-        public bool isOwner(DiscordUser u) => OwnerIds.Contains(u.Id);
+        public bool isOwner(DiscordUser u) => OwnerIds.Contains((long)u.Id);
 
         bool ICoreCredentials.IsOwner(DiscordUser u)
         {

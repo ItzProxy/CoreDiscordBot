@@ -18,6 +18,8 @@ using Core_Discord.CoreServices;
 using Core_Discord.CoreDatabase;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace Core_Discord
 {
@@ -50,6 +52,7 @@ namespace Core_Discord
             Credentials = new CoreCredentials();
             _db = new DbService(Credentials);
             _log.Info(Credentials.Token);
+            bool check = IsServerConnected();
             var coreConfig = new DiscordConfiguration
             {
                 AutoReconnect = true,
@@ -91,7 +94,7 @@ namespace Core_Discord
 
             //add dependency here
 
-            using(var uow = _db.UnitOfWork)
+            using (var uow = _db.UnitOfWork)
             {
                 _config = uow.BotConfig.GetOrCreate();
             }
@@ -336,6 +339,34 @@ namespace Core_Discord
                 this.Discord.UpdateStatusAsync(new DiscordGame("CS 476 Project")).ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (Exception) { }
+        }
+
+        public bool IsServerConnected()
+        {
+            SqlConnectionStringBuilder x = new SqlConnectionStringBuilder("Data Source=cs476project.database.windows.net;Initial Catalog=CoreDiscord;Integrated Security=False;User ID=dpasion;Password=forsaken1!;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+            using (var l_oConnection = new SqlConnection(x.ConnectionString))
+            {
+                try
+                {
+                    SqlDataReader read;
+                    SqlCommand cmd = new SqlCommand();
+                    cmd.CommandText = "SELECT * FROM dbo.Parts";
+                    cmd.CommandType = System.Data.CommandType.Text;
+                    cmd.Connection = l_oConnection;
+                    cmd.Connection.Open();
+                    read = cmd.ExecuteReader();
+                    while (read.Read())
+                    {
+                        Console.WriteLine(String.Format("{0} {1}", read[0], read[1]));
+                    }
+                    return true;
+                }
+                catch (SqlException e)
+                {
+                    _log.Info(e.Message);
+                    return false;
+                }
+            }
         }
     }
 }

@@ -9,9 +9,9 @@ namespace Core_Discord.CoreDatabase.Models
     /// </summary>
     public class GuildConfig : DbEntity
     {
-        public ulong ServerId { get; set; }
+        public long ServerId { get; set; }
         public string Prefix { get; set; }
-        public ulong AutoAssignRoleId { get; set; }
+        public long AutoAssignRoleId { get; set; }
 
         //greet stuff to be implemented later
 

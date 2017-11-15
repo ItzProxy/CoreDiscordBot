@@ -11,11 +11,11 @@ namespace Core_Discord.CoreDatabase.Models
     /// <authorId>the discord users numerical tag</authorId>
     /// <Songs> The songs in playlist that is instance as an empty list</Songs>
     /// </summary>
-    public class PlaylistUser
+    public class PlaylistUser : DbEntity
     {
         public string Name { get; set; }
         public string Author { get; set; }
-        public ulong AuthorId { get; set; }
+        public long AuthorId { get; set; }
         public List<PlaylistSong> Songs { get; set; } = new List<PlaylistSong>();
     }
 }
