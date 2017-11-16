@@ -29,6 +29,7 @@ namespace Core_Discord.CoreMusic
         private Logger _log;
         private readonly Thread _player;
         public VoiceNextClient VoiceChannel {get; private set;}
+        public CancellationTokenSource CancellationTokenSource { get; private set; }
         public DiscordChannel DiscordChannel { get;  set; }
         //logger
 
@@ -92,8 +93,10 @@ namespace Core_Discord.CoreMusic
         {
             _log = LogManager.GetCurrentClassLogger();
             Volume = volume;
-            Outpu`
+            DiscordChannel = chan;
             VoiceChannel = voice; //set voice channel up
+            CancellationTokenSource = new CancellationTokenSource();
+            _musicService = 
         }
     }
 }
