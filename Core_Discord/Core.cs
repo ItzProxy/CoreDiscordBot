@@ -12,43 +12,60 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 using System.IO;
+using Core_Discord.CoreDatabase.Models;
 using Core_Discord.CoreMusic;
 using Core_Discord.CoreServices;
 using Core_Discord.CoreDatabase;
 using Microsoft.Extensions.DependencyInjection;
-
+using NLog;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace Core_Discord
 {
     public sealed class Core
     {
-        public CoreConfig Config { get; set; }
+        private Logger _log;
+
+        public CoreCredentials Credentials { get; set; }
+        private readonly BotConfig _config;
         public DiscordClient Discord { get; set; }
         private CoreCommands Commands { get; }
         private VoiceNextClient VoiceService { get; }
         private CommandsNextModule CommandsNextService { get; }
-        private DbService dbService { get; }
         private InteractivityModule InteractivityService { get; }
         private Timer TimeGuard { get; set; }
+        private readonly DbService _db;
 
-
-        public Core(CoreConfig config, int shardId)
+        public Core(int ParentId, int shardId)
         {
-            this.Config = config;
+            //check if shardId assigned is < 0
+            if(shardId < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(shardId));
+            }
 
+            //set up credentials
+            LogSetup.LoggerSetup(shardId);
+            _config = new BotConfig();
+            _log = LogManager.GetCurrentClassLogger();
+            Credentials = new CoreCredentials();
+            _db = new DbService(Credentials);
+            _log.Info(Credentials.Token);
+            bool check = IsServerConnected();
             var coreConfig = new DiscordConfiguration
             {
                 AutoReconnect = true,
                 LargeThreshold = 250,
-                LogLevel = LogLevel.Debug,
-                Token = this.Config.Token,
-                TokenType = this.Config.UseUserToken ? TokenType.User : TokenType.Bot,
+                LogLevel = DSharpPlus.LogLevel.Debug,
+                Token = Credentials.Token,
+                TokenType = Credentials.UseUserToken ? TokenType.User : TokenType.Bot,
                 UseInternalLogHandler = false,
                 ShardId = shardId,
-                ShardCount = this.Config.ShardCount,
+                ShardCount = Credentials.TotalShards,
                 EnableCompression = true,
                 MessageCacheSize = 50,
-                AutomaticGuildSync = !this.Config.UseUserToken,
+                AutomaticGuildSync = true,
                 DateTimeFormat = "dd-MM-yyyy HH:mm:ss zzz"
             };
 
@@ -73,21 +90,25 @@ namespace Core_Discord
             this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
 
             var depoBuild = new DependencyCollectionBuilder();
-           
+
 
             //add dependency here
 
-
+            using (var uow = _db.UnitOfWork)
+            {
+                _config = uow.BotConfig.GetOrCreate();
+            }
             //build command configuration
             //see Dsharpplus configuration
+            _log.Info($"{_config.DefaultPrefix}");
             var commandConfig = new CommandsNextConfiguration
             {
-                StringPrefix = this.Config.CommandPrefix,
+                StringPrefix = _config.DefaultPrefix,
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 CaseSensitive = true,
                 Dependencies = depoBuild.Build(),
-                SelfBot = this.Config.UseUserToken,
+                SelfBot = Credentials.UseUserToken,
                 IgnoreExtraArguments = false
             };
 
@@ -145,20 +166,20 @@ namespace Core_Discord
 
             switch (e.Level)
             {
-                case LogLevel.Critical:
-                case LogLevel.Error:
+                case DSharpPlus.LogLevel.Critical:
+                case DSharpPlus.LogLevel.Error:
                     Console.ForegroundColor = ConsoleColor.Red;
                     break;
 
-                case LogLevel.Warning:
+                case DSharpPlus.LogLevel.Warning:
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     break;
 
-                case LogLevel.Info:
+                case DSharpPlus.LogLevel.Info:
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     break;
 
-                case LogLevel.Debug:
+                case DSharpPlus.LogLevel.Debug:
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     break;
 
@@ -180,7 +201,7 @@ namespace Core_Discord
         /// </returns>
         private Task Discord_Ready(ReadyEventArgs e)
         {
-            if (!this.Config.UseUserToken)
+            if (!this.Credentials.UseUserToken)
                 this.TimeGuard = new Timer(TimerCallback, null, TimeSpan.FromMinutes(0), TimeSpan.FromMinutes(15));
             return Task.Delay(0);
         }
@@ -191,7 +212,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_GuildAvailable(GuildCreateEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(LogLevel.Info, "DSPlus Test", $"Guild available: {e.Guild.Name}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild available: {e.Guild.Name}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -201,7 +222,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_GuildCreated(GuildCreateEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(LogLevel.Info, "DSPlus Test", $"Guild created: {e.Guild.Name}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild created: {e.Guild.Name}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -221,17 +242,17 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_ClientErrored(ClientErrorEventArgs e)
         {
-            this.Discord.DebugLogger.LogMessage(LogLevel.Error, "DSP Test", $"Client threw an exception: {e.Exception.GetType()}", DateTime.Now);
+            this.Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "DSP Test", $"Client threw an exception: {e.Exception.GetType()}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="e"></param>
-        /// <returns></returns>
+        /// <returns>Task</returns>
         private Task Discord_SocketError(SocketErrorEventArgs e)
         {
-            this.Discord.DebugLogger.LogMessage(LogLevel.Error, "WebSocket", $"WS threw an exception: {e.Exception.GetType()}", DateTime.Now);
+            this.Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "WebSocket", $"WS threw an exception: {e.Exception.GetType()}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -245,7 +266,7 @@ namespace Core_Discord
             if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                 return;
 
-            Discord.DebugLogger.LogMessage(LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 
             if(e.Exception is UnauthorizedAccessException)
             {
@@ -303,7 +324,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task CommandsNextService_CommandExecuted(CommandExecutionEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(LogLevel.Info, "CommandsNext", $"{e.Context.User.Username} executed '{e.Command.QualifiedName}' in {e.Context.Channel.Name}", DateTime.Now);
+            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "CommandsNext", $"{e.Context.User.Username} executed '{e.Command.QualifiedName}' in {e.Context.Channel.Name}", DateTime.Now);
             return Task.Delay(0);
         }
 
@@ -318,6 +339,34 @@ namespace Core_Discord
                 this.Discord.UpdateStatusAsync(new DiscordGame("CS 476 Project")).ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (Exception) { }
+        }
+
+        public bool IsServerConnected()
+        {
+            SqlConnectionStringBuilder x = new SqlConnectionStringBuilder("Data Source=cs476project.database.windows.net;Initial Catalog=CoreDiscord;Integrated Security=False;User ID=dpasion;Password=forsaken1!;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+            using (var l_oConnection = new SqlConnection(x.ConnectionString))
+            {
+                try
+                {
+                    SqlDataReader read;
+                    SqlCommand cmd = new SqlCommand();
+                    cmd.CommandText = "SELECT * FROM dbo.Parts";
+                    cmd.CommandType = System.Data.CommandType.Text;
+                    cmd.Connection = l_oConnection;
+                    cmd.Connection.Open();
+                    read = cmd.ExecuteReader();
+                    while (read.Read())
+                    {
+                        Console.WriteLine(String.Format("{0} {1}", read[0], read[1]));
+                    }
+                    return true;
+                }
+                catch (SqlException e)
+                {
+                    _log.Info(e.Message);
+                    return false;
+                }
+            }
         }
     }
 }

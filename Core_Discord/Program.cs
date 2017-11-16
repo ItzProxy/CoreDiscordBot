@@ -5,17 +5,23 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 namespace Core_Discord
 {
     internal sealed class Program
     {
-        List<Thread> KeepRunning;
+        static public IConfigurationRoot Configuration { get; set; }
         public static void Main(string[] arg)
         {
+            var builder = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json");
+
+            Configuration = builder.Build();
             try
             {
-                
                 MainAsync().Wait();
             }
             catch (Exception ex)
@@ -30,6 +36,7 @@ namespace Core_Discord
         /// <returns></returns>
         public static async Task MainAsync()
         {
+
             var config = new CoreConfig();
             var json = string.Empty;
 
@@ -49,7 +56,7 @@ namespace Core_Discord
             var tasklist = new List<Task>();
             for(var i = 0; i < config.ShardCount; i++)
             {
-                var bot = new Core(config, i);
+                var bot = new Core(Process.GetCurrentProcess().Id, i);
                 tasklist.Add(bot.RunAsync());
             }
             await Task.WhenAll(tasklist).ConfigureAwait(false);

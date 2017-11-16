@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Core_Discord": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "CoreDiscord": "Development"
+      }
+    }
+  }
+}

@@ -7,11 +7,13 @@ namespace Core_Discord.CoreDatabase.Models
     /// <summary>
     /// encapsulates the local configuration of bot, this is different from the global configuration file (CoreConfig.cs)
     /// </summary>
-    public class ServerConfig : DbEntity
+    public class GuildConfig : DbEntity
     {
-        public ulong ServerId { get; set; }
+        public long ServerId { get; set; }
         public string Prefix { get; set; }
-        public ulong AutoAssignRoleId { get; set; }
+        public long AutoAssignRoleId { get; set; }
+
+        //greet stuff to be implemented later
 
         //music settings/voice settings
         public float DefaultMusicVolume = 1.0f;

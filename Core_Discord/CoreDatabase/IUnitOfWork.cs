@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core_Discord.CoreDatabase
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
         CoreContext _context { get; }
 

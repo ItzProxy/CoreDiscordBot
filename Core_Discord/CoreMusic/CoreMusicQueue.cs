@@ -22,7 +22,14 @@ namespace Core_Discord.CoreMusic
             {
                 lock (locker)
                 {
-
+                    if(Songs.Count == 0)
+                    {
+                        _currIndex = 0;
+                    }
+                    else
+                    {
+                        _currIndex = value %= Songs.Count;
+                    }
                 }
             }
         }

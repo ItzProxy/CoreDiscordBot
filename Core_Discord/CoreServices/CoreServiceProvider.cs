@@ -6,7 +6,6 @@ namespace Core_Discord.CoreServices
 {
     public interface INServiceProvider
     {
-        T
     }
     public class CoreServiceProvider
     {
