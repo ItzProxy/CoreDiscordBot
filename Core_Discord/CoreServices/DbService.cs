@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Core_Discord.CoreDatabase;
 using System.Data.SqlClient;
 using Core_Discord.CoreServices.Interfaces;
-using System.IO;
 using System.Linq;
 using NLog;
 
@@ -55,7 +52,7 @@ namespace Core_Discord.CoreServices
 
             //connection to database
             var conn = context.Database.GetDbConnection();
-            _log.Info(conn.ConnectionString);
+            //_log.Info(conn.ConnectionString); //debugging purpose
             conn.Open();
             //not sure if SQL has WAL(write ahead log)
             //context.Database.ExecuteSqlCommand("PRAGMA journal_mode=WAL");
