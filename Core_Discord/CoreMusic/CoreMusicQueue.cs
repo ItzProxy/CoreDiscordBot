@@ -149,6 +149,13 @@ namespace Core_Discord.CoreMusic
         {
             Clear();
         }
+        public (int CurrIndex, MusicInfo[] Songs) ToArray()
+        {
+            lock (locker)
+            {
+                return (CurrIndex, Songs.ToArray());
+            }
+        }
         /// <summary>
         /// Destroys all nodes in Songs linked list and resets index to 0
         /// </summary>

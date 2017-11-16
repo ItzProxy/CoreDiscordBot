@@ -5,6 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.VoiceNext;
 using DSharpPlus.Exceptions;
+using DSharpPlus;
+using System.Linq;
+using DSharpPlus.Entities;
+using NLog;
 
 /// <summary>
 /// Built using an Outdated Music Player for Discord
@@ -22,9 +26,10 @@ namespace Core_Discord.CoreMusic
     }
     public sealed class CoreMusicPlayer
     {
-
+        private Logger _log;
         private readonly Thread _player;
         public VoiceNextClient VoiceChannel {get; private set;}
+        public DiscordChannel DiscordChannel { get;  set; }
         //logger
 
         private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
@@ -72,8 +77,22 @@ namespace Core_Discord.CoreMusic
 
         private bool cancel = false;
 
-        public CoreMusicPlayer(VoiceNextClient voice)
+        public TimeSpan TotalPlayTime
         {
+            get
+            {
+                var songs = Queue.ToArray().Songs;
+                return songs.Any(x => x.TotalTime == TimeSpan.MaxValue)
+                    ? TimeSpan.MaxValue
+                    : new TimeSpan(songs.Sum(s => s.TotalTime.Ticks));
+            }
+        }
+
+        public CoreMusicPlayer(VoiceNextClient voice, DiscordChannel chan, float volume)
+        {
+            _log = LogManager.GetCurrentClassLogger();
+            Volume = volume;
+            Outpu`
             VoiceChannel = voice; //set voice channel up
         }
     }
