@@ -44,13 +44,18 @@ namespace Core_Discord.Store_Sim
         var interactivity = e.Client.GetInteractivityModule();
         while (!done)
         {
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-            await e.Message.RespondAsync($"Main Menu.\n", mchoice, int);
-            await e.Message.RespondAsync($"Budget: {0}.\n", budget, int);
-            await e.Message.RespondAsync($"Press i to manage inventory\n", mchoice, int);
-            await e.Message.RespondAsync($"press e to manage employees.\n", mchoice, int);
-            await e.Message.RespondAsync($"press a to manage the account, or roll over to the next month.\n", mchoice, int);
-            await e.Message.RespondAsync($"press q to quit.\n", mchoice, int);
+            var intro = new DiscordEmbedBuilder({
+               Author = "Matthew" 
+            });
+            await e.Message.RespondAsync($"*****************.\n");
+            await e.Message.RespondAsync($"Main Menu.\n");
+            await e.Message.RespondAsync($"Budget: {budget}.");
+            await e.Message.RespondAsync($"enter i to manage inventory\n"
+                +"enter e to manage employees.\n"
+                +"enter a to manage the account, or roll over to the next month.\n"
+                +"enter e to manage employees.\n" 
+                +"enter a to manage the account, or roll over to the next month.\n"+
+                "enter q to quit.\n");
             await e.Message.RespondAsync($"*****************.\n", mchoice, int);
             mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.toString(), out var value) && value.isLetter) ? true : false);
             switch (mchoice)
