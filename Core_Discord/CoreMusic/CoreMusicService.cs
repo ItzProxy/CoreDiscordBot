@@ -11,6 +11,7 @@ using NLog;
 using System.IO;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Net.WebSocket;
+using Google.Apis.Services;
 //using NadekoBot.Modules.Music.Common;
 //using NadekoBot.Modules.Music.Common.Exceptions;
 //using NadekoBot.Modules.Music.Common.SongResolver;
@@ -21,7 +22,7 @@ namespace Core_Discord.CoreMusic
     public class CoreMusicService : IUnloadableService, CoreService
     {
         public const string MusicPath = "data/music";
-        private readonly IGoogleApiService
+        private readonly IGoogleApiService apiService;
         private readonly DbService _db;
         private readonly Logger _log;
         private ICoreCredentials _cred;
@@ -32,6 +33,8 @@ namespace Core_Discord.CoreMusic
         private readonly DiscordClient _client;
 
         public ConcurrentDictionary<long, CoreMusicPlayer> MusicPlayers { get; } = new ConcurrentDictionary<long, CoreMusicPlayer>();
+
+
 
         public CoreMusicService(DiscordClient client, DbService db, ICoreCredentials cred, Core core)
         {

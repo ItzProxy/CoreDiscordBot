@@ -31,6 +31,7 @@
     <PackageReference Include="DSharpPlus" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="3.2.3" />
+    <PackageReference Include="DSharpPlus.ModernEmbedBuilder" Version="1.0.0" />
     <PackageReference Include="DSharpPlus.Rest" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.VoiceNext" Version="3.2.3" />
     <PackageReference Include="Google.Apis" Version="1.31.0-beta01" />

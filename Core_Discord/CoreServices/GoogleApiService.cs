@@ -22,12 +22,16 @@ namespace Core_Discord.CoreServices
         private YouTubeService _youtube;
         private UrlshortenerService _urlss;
         private CustomsearchService cs;
-
-        private 
+        private readonly ICoreCredentials _cred;
 
         public GoogleApiService(ICoreCredentials cred)
         {
-
+            _cred = cred;
+            var cli = new BaseClientService.Initializer
+            {
+                ApplicationName = "Core Discord",
+                ApiKey = _cred.GoogleApiKey
+            };
         }
 
         public IEnumerable<string> Languages => throw new NotImplementedException();
@@ -51,9 +55,27 @@ namespace Core_Discord.CoreServices
         {
             throw new NotImplementedException();
         }
-
-        public Task<IReadOnlyDictionary<string, TimeSpan>> GetVideoDurationsAsync(IEnumerable<string> videoIds)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="videoIds"></param>
+        /// <returns></returns>
+        public async Task<IReadOnlyDictionary<string, TimeSpan>> GetVideoDurationsAsync(IEnumerable<string> videoIds)
         {
+            await Task.Yield();
+            var list = videoIds.ToList();
+
+            Dictionary<string, TimeSpan> returnVideoDuration = new Dictionary<string, TimeSpan>();
+
+            if (videoIds.Count() <= 0)
+            {
+                return returnVideoDuration;
+            }
+            
+            while(list.Count > 0)
+            {
+                list.
+            }
             throw new NotImplementedException();
         }
 
@@ -61,13 +83,35 @@ namespace Core_Discord.CoreServices
         {
             throw new NotImplementedException();
         }
-
-        public Task<IEnumerable<string>> GetVideoLinksByKeywordAsync(string keywords, int count = 1)
+        /// <summary>
+        /// Based on
+        /// https://developers.google.com/youtube/v3/code_samples/java#search_by_keyword
+        /// 
+        /// </summary>
+        /// <param name="keywords"></param>
+        /// <param name="count"></param>
+        /// <returns>List of ids matching keywords</returns>
+        public async Task<IEnumerable<string>> GetVideoLinksByKeywordAsync(string keywords, int count = 1)
         {
-            throw new NotImplementedException();
+            await Task.Yield();
+            if (string.IsNullOrWhiteSpace(keywords))
+            {
+                throw new ArgumentNullException(nameof(keywords));
+            }
+            if(count <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            var query = _youtube.Search.List("id, snippit");
+            query.MaxResults = count;
+            query.Type = "playlist";
+            query.Q = keywords;
+
+            return (await query.ExecuteAsync()).Items.Select(m => m.Id.PlaylistId);
         }
 
-        public Task<string> ShortenUrl(string url)
+        public async Task<string> ShortenUrl(string url)
         {
             throw new NotImplementedException();
         }

@@ -27,13 +27,11 @@ namespace Core_Discord.CoreServices
         public RestartConfig RestartCommand { get; }
         public DBConfig Db { get; }
         public int TotalShards { get; }
-        public string CarbonKey { get; }
 
         public string ShardRunCommand { get; }
         public string ShardRunArguments { get; }
         public int ShardRunPort { get; }
 
-        public string PatreonCampaignId { get; }
 
         public bool UseUserToken { get; set; } = false;
 
