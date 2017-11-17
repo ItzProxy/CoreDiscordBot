@@ -30,212 +30,216 @@ namespace Core_Discord.Store_Sim
     public class StoreSim
     {
 
-    public float budget { get; set; } = 10000.00f;
-    public EmployeeList EList { get; set; } //*
-    public InventoryList IList { get; set; } //*
-    public Accounting Acount { get; set; } //*
-    public Calculator Numbers { get; set; } //*
+        public float budget { get; set; } = 10000.00f;
+        public EmployeeList EList { get; set; } //*
+        public InventoryList IList { get; set; } //*
+        public Accounting Acount { get; set; } //*
+        public Calculator Numbers { get; set; } //*
 
 
-    public async Task main(CommandContext e) //*
+        public async Task main(CommandContext e) //*
+        {
+            bool done = false;
+            var interactivity = e.Client.GetInteractivityModule();
+            while (!done)
+            {
+                var intro = new DiscordEmbedBuilder
+                {
+                    Description = "Introduction to Store Simulator",
+                    Title = "Main Menu"
+                };
+                intro.AddField
+                await e.Message.RespondAsync($"*****************.\n");
+                await e.Message.RespondAsync($"Main Menu.\n");
+                await e.Message.RespondAsync($"Budget: {budget}.");
+                await e.Message.RespondAsync($"enter i to manage inventory\n"
+                    + "enter e to manage employees.\n"
+                    + "enter a to manage the account, or roll over to the next month.\n"
+                    + "enter e to manage employees.\n"
+                    + "enter a to manage the account, or roll over to the next month.\n" +
+                    "enter q to quit.\n");
+                var mchoice = await interactivity.WaitForMessageAsync(x => (Char.TryParse(x.Content.ToLower(), out var value) && Char.IsLetter(value)) ? true : false, TimeSpan.FromSeconds(60));
+                switch (mchoice.Message.Content.ToCharArray()[0])
+                {
+                    case 'i':
+                        await MenuI(e);
+                        break;
+                    case 'e':
+                        await MenuE(e);
+                        break;
+                    case 'a':
+                        await MenuA(e);
+                        break;
+                    case 'q':
+                        await e.Message.RespondAsync($"goodbye\n"); //cout << "goodbye" << endl;
+                        done = true;
+                        break;
+                    default:
+                        await e.Message.RespondAsync($"Invalid choice. Please try again.\n");
+                        break;
+                }
+            }
+        }
+        public async Task MenuI(CommandContext e)
+        {
+            //while loop
+            bool done = false;
+            var interactivity = e.Client.GetInteractivityModule();
+            while (!done)
+            {
+                await e.Message.RespondAsync($"Inventory menu.\n");
+                await e.Message.RespondAsync($"*****************.\n");
+                await e.Message.RespondAsync($"Budget: {budget}.\n");
+                await e.Message.RespondAsync($"Next Month's Order cost: {IList.OrderCost}.\n");
+                await e.Message.RespondAsync($"Product list:\n");
+                Stack<Product> storage = new Stack<Product>();
+                //go through each element
+                foreach (IList.)
+                {
+                    IList.list.head.printinfo();
+                    storage.push(IList.list.head);
+                    IList.list.pop();
+                }
+                //push back each element
+                while (storage.Count > 0)
+                {
+                    IList.list.push(storage.head);
+                    storage.pop();
+                }
+                await e.Message.RespondAsync($"Press a to add a product\n");
+                await e.Message.RespondAsync($"press o to alter the order.\n");
+                await e.Message.RespondAsync($"press s to sell products.\n");
+                await e.Message.RespondAsync($"press q to quit.\n");
+
+                var mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.ToLower(), out var value) && char.IsLetter(value)) ? true : false);
+                switch (mchoice.ToString().ToCharArray()[0]) //figure out of this is right
+                {
+                    case 'a':
+                        IList.AddProduct();
+                        break;
+                    case 'o':
+                        IList.AlterOrder();
+                        break;
+                    case 's':
+                        IList.Sell();
+                        break;
+                    case 'q':
+                        await e.Message.RespondAsync($"goodbye\n", mchoice, int);
+                        done = true;
+                        break;
+                    default:
+                        await e.Message.RespondAsync($"Invalid choice. Please try again.\n", mchoice, int);
+                        break;
+                }
+            }
+        }
+        public async task MenuE()
+        {///////////////////////////////////////////////////////////////////////////////////////
+            bool done = false;
+            char mchoice;
+            var interactivity = e.Client.GetInteractivityModule();
+            int numhunt;
+            while (!done)
+            {
+
+                await e.Message.RespondAsync($"Employee Managment menu.\n", mchoice, int);
+                await e.Message.RespondAsync($"*****************.\n", mchoice, int);
+                await e.Message.RespondAsync($"Budget: {0}.\n", budget, int);
+                await e.Message.RespondAsync($"Next Month's Paycheck cost: {0}.\n", EList.EmployeeCost, int);
+                await e.Message.RespondAsync($"Employee list:\n", mchoice, int);
+                stack<Employee> storage;
+                //go through each element
+                while (!EList.list.empty())
+                {
+                    EList.list.head.printinfo();
+                    storage.push(EList.list.head);
+                    EList.list.pop();
+                }
+                //push back each element
+                while (!storage.empty())
+                {
+                    EList.list.push(storage.head);
+                    storgate.pop();
+                }
+                await e.Message.RespondAsync($"Press a to hire a new elployee\n", mchoice, int);
+                await e.Message.RespondAsync($"press f to fire an employee.\n", mchoice, int);
+                await e.Message.RespondAsync($"press c to change an employee's shift and/or pay rate.\n", mchoice, int);
+                await e.Message.RespondAsync($"press q to quit.\n", mchoice, int);
+                await e.Message.RespondAsync($"*****************.\n", mchoice, int);
+
+                mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.toString(), out var value) && value.isLetter) ? true : false);
+                switch (mchoice) //figure out of this is right
+                {
+                    case 'a':
+                        EList.AddEmployee();
+                        break;
+                    case 'f':
+                        await e.Message.RespondAsync($"Enter employee number (all employees with this number will be fired):", mchoice, int);
+                        numhunt == await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+                        EList.Fire(numhunt);
+                        break;
+                    case 'c':
+                        await e.Message.RespondAsync($"Enter employee number (You will go over all employees with this number):", mchoice, int);
+                        numhunt == await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+                        EList.change(numhunt);
+                        break;
+                    case 'q':
+                        await e.Message.RespondAsync($"goodbye\n", mchoice, int);
+                        done = true;
+                        break;
+                    default:
+                        await e.Message.RespondAsync($"Invalid choice. Please try again.\n", mchoice, int);
+                        break;
+                }
+            }
+        }
+        public async task MenuA()
+        {
+            bool done = false;
+            char mchoice;
+            int due;
+            var interactivity = e.Client.GetInteractivityModule();
+            while (!done)
+            {
+                await e.Message.RespondAsync($"Accounting menu.\n", mchoice, int);
+                await e.Message.RespondAsync($"*****************.\n", mchoice, int);
+                await e.Message.RespondAsync($"Budget: {0}.\n", budget, int);
+                await e.Message.RespondAsync($"Next Month's Paycheck cost: {0}.\n", EList.EmployeeCost, int);
+                await e.Message.RespondAsync($"Next Month's Order cost: {0}.\n", IList.OrderCost, int);
+                due = budget - EList.EmployeeCost - IList.OrderCost;
+                await e.Message.RespondAsync($"Next month's budget: {0}.\n", due, int);
+                await e.Message.RespondAsync($"Press r to roll over month\n", mchoice, int);
+                await e.Message.RespondAsync($"press c to alter budget by adding or removing money.\n", mchoice, int);
+                await e.Message.RespondAsync($"press q to quit.\n", mchoice, int);
+                await e.Message.RespondAsync($"*****************.\n", mchoice, int);
+
+                mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.toString(), out var value) && value.isLetter) ? true : false);
+                switch (mchoice)
+                {
+                    case 'r':
+                        Acount.NextMonth();
+                        break;
+                    case 'c':
+                        Acount.ChangeBudget();
+                        break;
+                    case 'q':
+                        await e.Message.RespondAsync($"goodbye\n", mchoice, int);
+                        done = true;
+                        break;
+                    default:
+                        await e.Message.RespondAsync($"Invalid choice. Please try again.\n", mchoice, int);
+                        break;
+                }
+            }
+        }
+    }
+
+    public class EmployeeList
     {
-        bool done = false;
-        char mchoice;
-        var interactivity = e.Client.GetInteractivityModule();
-        while (!done)
-        {
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-            await e.Message.RespondAsync($"Main Menu.\n", mchoice, int);
-            await e.Message.RespondAsync($"Budget: {0}.\n", budget, int);
-            await e.Message.RespondAsync($"Press i to manage inventory\n", mchoice, int);
-            await e.Message.RespondAsync($"press e to manage employees.\n", mchoice, int);
-            await e.Message.RespondAsync($"press a to manage the account, or roll over to the next month.\n", mchoice, int);
-            await e.Message.RespondAsync($"press q to quit.\n", mchoice, int);
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-            mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.toString(), out var value) && value.isLetter) ? true : false);
-            switch (mchoice)
-            {
-                case 'i':
-                    await MenuI();
-                    break;
-                case 'e':
-                    await MenuE();
-                    break;
-                case 'a':
-                    MenuA();
-                    break;
-                case 'q':
-                    await e.Message.RespondAsync($"goodbye\n", mchoice, int); //cout << "goodbye" << endl;
-                    done = true;
-                    break;
-                default:
-                    await e.Message.RespondAsync($"Invalid choice. Please try again.\n", mchoice, int);
-                    break;
-            }
-        }
-    }
-    public async task MenuI()
-    {
-        //while loop
-        bool done = false;
-        char mchoice;
-        var interactivity = e.Client.GetInteractivityModule();
-        while (!done)
-        {
-            await e.Message.RespondAsync($"Inventory menu.\n", mchoice, int);
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-            await e.Message.RespondAsync($"Budget: {0}.\n", budget, int);
-            await e.Message.RespondAsync($"Next Month's Order cost: {0}.\n", IList.OrderCost, int);
-            await e.Message.RespondAsync($"Product list:\n", mchoice, int);
-            stack<Product> storage;
-            //go through each element
-            while (!LList.list.empty())
-            {
-                IList.list.head.printinfo();
-                storage.push(IList.list.head);
-                IList.list.pop();
-            }
-            //push back each element
-            while (!storage.empty())
-            {
-                IList.list.push(storage.head);
-                storgate.pop();
-            }
-            await e.Message.RespondAsync($"Press a to add a product\n", mchoice, int);
-            await e.Message.RespondAsync($"press o to alter the order.\n", mchoice, int);
-            await e.Message.RespondAsync($"press s to sell products.\n", mchoice, int);
-            await e.Message.RespondAsync($"press q to quit.\n", mchoice, int);
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
+        public float EmployeeCost; {   get;   set;  }
+    public stack<Employee> list; {   get;   set;  }
 
-            mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.toString(), out var value) && value.isLetter) ? true : false);
-            switch (mchoice) //figure out of this is right
-            {
-                case 'a':
-                    IList.AddProduct();
-                    break;
-                case 'o':
-                    IList.AlterOrder();
-                    break;
-                case 's':
-                    IList.Sell();
-                    break;
-                case 'q':
-                    await e.Message.RespondAsync($"goodbye\n", mchoice, int);
-                    done = true;
-                    break;
-                default:
-                    await e.Message.RespondAsync($"Invalid choice. Please try again.\n", mchoice, int);
-                    break;
-            }
-        }
-    }
-    public async task MenuE()
-    {///////////////////////////////////////////////////////////////////////////////////////
-        bool done = false;
-        char mchoice;
-        var interactivity = e.Client.GetInteractivityModule();
-        int numhunt;
-        while (!done)
-        {
-
-            await e.Message.RespondAsync($"Employee Managment menu.\n", mchoice, int);
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-            await e.Message.RespondAsync($"Budget: {0}.\n", budget, int);
-            await e.Message.RespondAsync($"Next Month's Paycheck cost: {0}.\n", EList.EmployeeCost, int);
-            await e.Message.RespondAsync($"Employee list:\n", mchoice, int);
-            stack<Employee> storage;
-            //go through each element
-            while (!EList.list.empty())
-            {
-                EList.list.head.printinfo();
-                storage.push(EList.list.head);
-                EList.list.pop();
-            }
-            //push back each element
-            while (!storage.empty())
-            {
-                EList.list.push(storage.head);
-                storgate.pop();
-            }
-            await e.Message.RespondAsync($"Press a to hire a new elployee\n", mchoice, int);
-            await e.Message.RespondAsync($"press f to fire an employee.\n", mchoice, int);
-            await e.Message.RespondAsync($"press c to change an employee's shift and/or pay rate.\n", mchoice, int);
-            await e.Message.RespondAsync($"press q to quit.\n", mchoice, int);
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-
-            mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.toString(), out var value) && value.isLetter) ? true : false);
-            switch (mchoice) //figure out of this is right
-            {
-                case 'a':
-                    EList.AddEmployee();
-                    break;
-                case 'f':
-                    await e.Message.RespondAsync($"Enter employee number (all employees with this number will be fired):", mchoice, int);
-                    numhunt == await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                    EList.Fire(numhunt);
-                    break;
-                case 'c':
-                    await e.Message.RespondAsync($"Enter employee number (You will go over all employees with this number):", mchoice, int);
-                    numhunt == await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                    EList.change(numhunt);
-                    break;
-                case 'q':
-                    await e.Message.RespondAsync($"goodbye\n", mchoice, int);
-                    done = true;
-                    break;
-                default:
-                    await e.Message.RespondAsync($"Invalid choice. Please try again.\n", mchoice, int);
-                    break;
-            }
-        }
-    }
-    public async task MenuA()
-    {
-        bool done = false;
-        char mchoice;
-        int due;
-        var interactivity = e.Client.GetInteractivityModule();
-        while (!done)
-        {
-            await e.Message.RespondAsync($"Accounting menu.\n", mchoice, int);
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-            await e.Message.RespondAsync($"Budget: {0}.\n", budget, int);
-            await e.Message.RespondAsync($"Next Month's Paycheck cost: {0}.\n", EList.EmployeeCost, int);
-            await e.Message.RespondAsync($"Next Month's Order cost: {0}.\n", IList.OrderCost, int);
-            due = budget - EList.EmployeeCost - IList.OrderCost;
-            await e.Message.RespondAsync($"Next month's budget: {0}.\n", due, int);
-            await e.Message.RespondAsync($"Press r to roll over month\n", mchoice, int);
-            await e.Message.RespondAsync($"press c to alter budget by adding or removing money.\n", mchoice, int);
-            await e.Message.RespondAsync($"press q to quit.\n", mchoice, int);
-            await e.Message.RespondAsync($"*****************.\n", mchoice, int);
-
-            mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.toString(), out var value) && value.isLetter) ? true : false);
-            switch (mchoice)
-            {
-                case 'r':
-                    Acount.NextMonth();
-                    break;
-                case 'c':
-                    Acount.ChangeBudget();
-                    break;
-                case 'q':
-                    await e.Message.RespondAsync($"goodbye\n", mchoice, int);
-                    done = true;
-                    break;
-                default:
-                    await e.Message.RespondAsync($"Invalid choice. Please try again.\n", mchoice, int);
-                    break;
-            }
-        }
-    }
-}
-
-public class EmployeeList
-{
-    public float EmployeeCost; {   get;   set;  }
-public stack<Employee> list; {   get;   set;  }
-
-  public async task AddEmployee()
+public async Task AddEmployee()
 {
     employee newEm;
     float UInput1;
@@ -285,7 +289,7 @@ public int Fire(int search)
     while (!storage.empty())
     {
         list.push(storage.head);
-        storgate.pop();
+        storage.pop();
     }
     EmployeeCost = Numbers.CalcEmployeeRate(list);
 }
@@ -332,17 +336,16 @@ public async task Change(int search)
     }
     EmployeeCost = Numbers.CalcEmployeeRate(list);
 }
- }
 
- public sealed class Employee
+public sealed class Employee
 {
     public string name; {   get;   set;  }
 public int EmNum; {   get;   set;  }
-  public float rate; {   get;   set;  }
-  public int StartH; {   get;   set;  }
-  public int StartM; {   get;   set;  }
-  public int EndH; {   get;   set;  }
-  public int EndM; {   get;   set;  }
+     public float rate; {   get;   set;  }
+    public int StartH; {   get;   set;  }
+    public int StartM; {   get;   set;  }
+     public int EndH; {   get;   set;  }
+    public int EndM; {   get;   set;  }
 
   public async task printinfo(); {
    //cout << name << " #" << EmNum << " payed:" << rate << " " << StartH << ":" << StartM << "-" << EndH << ":" << EndM << endl;
@@ -437,41 +440,48 @@ public async task Sell(string search)
     }
 
 }
- }
 
- public sealed class Product
+
+public sealed class Product
 {
-    public string name; {   get;   set;  }
-public float SellPrice; {   get;   set;  }
-  public float BuyPrice; {   get;   set;  }
-  public int Stock; {   get;   set;  }
-  public int order; {   get;   set;  }
+    public string name { get; set; }
+    public float SellPrice { get; set; }
+    public float BuyPrice { get; set; }
+    public int Stock { get; set; }
+    public int order { get; set; }
 
-  public async task printinfo(); {
-   await e.Message.RespondAsync("{0} Sell:${1} buy:${2} Stock:{3} Next Month's Order {4}\n", name, SellPrice, BuyPrice, Stock, order);
-  }
- }
+    public async Task printinfo()
+    {
+        await e.Message.RespondAsync("{0} Sell:${1} buy:${2} Stock:{3} Next Month's Order {4}\n", name, SellPrice, BuyPrice, Stock, order);
+    }
+}
 
- public class Accounting
+public class Accounting 
 {
-    public float NextMonth(); {
-   if (budget - Numbers.CalcMonthlyCost() < 0.0) {
-    budget = budget - Numbers.CalcMonthlyCost();
-	await e.Message.RespondAsync($"month rolled over\n", budget, int);
-} else {
-	await e.Message.RespondAsync($"cannot roll over month unless products are sold\n", budget, int);
-   }
-  }
-  public float ChangeBudget(); {
-   float change;
-var interactivity = e.Client.GetInteractivityModule();
-await e.Message.RespondAsync($"enter value to add to budget (to take away from budget, enter a negative value):", budget, int);
-change= await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true:false);
-   budget = budget + change;
-  }
- }
+    public float NextMonth()
+    {
 
- public sealed class Calculator //still stuff to clean up
+        if (budget - Numbers.CalcMonthlyCost() < 0.0)
+        {
+            budget = budget - Numbers.CalcMonthlyCost();
+            await e.Message.RespondAsync($"month rolled over\n", budget, int);
+        }
+        else
+        {
+            await e.Message.RespondAsync($"cannot roll over month unless products are sold\n", budget, int);
+        }
+    }
+    public float ChangeBudget()
+    {
+        float change;
+        var interactivity = e.Client.GetInteractivityModule();
+        await e.Message.RespondAsync($"enter value to add to budget (to take away from budget, enter a negative value):", budget, int);
+        change = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
+        budget = budget + change;
+    }
+}
+
+public sealed class Calculator //still stuff to clean up
 {
     public float CalcEmployeeRate(stack<Employee> list) //
     {

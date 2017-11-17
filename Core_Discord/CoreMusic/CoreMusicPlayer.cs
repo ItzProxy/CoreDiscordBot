@@ -30,7 +30,7 @@ namespace Core_Discord.CoreMusic
         private readonly Thread _player;
         public VoiceNextClient VoiceChannel {get; private set;}
         public CancellationTokenSource CancellationTokenSource { get; private set; }
-        public DiscordChannel DiscordChannel { get;  set; }
+        public DiscordChannel TextChannel { get;  set; }
         //logger
 
         private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
@@ -89,13 +89,14 @@ namespace Core_Discord.CoreMusic
             }
         }
 
-        public CoreMusicPlayer(VoiceNextClient voice, DiscordChannel chan, float volume)
+        public CoreMusicPlayer(VoiceNextClient voice, DiscordChannel textChan, float volume)
         {
             _log = LogManager.GetCurrentClassLogger();
             Volume = volume;
-            DiscordChannel = chan;
+            TextChannel = textChan;
             VoiceChannel = voice; //set voice channel up
             CancellationTokenSource = new CancellationTokenSource();
+            
             _musicService = 
         }
     }
