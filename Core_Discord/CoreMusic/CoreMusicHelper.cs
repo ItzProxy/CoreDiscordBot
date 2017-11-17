@@ -53,7 +53,7 @@ namespace Core_Discord.Music
         private Process StartFFmegProcess(string SongUrl, float skipTo = 0)
         {
 
-            var args = $"-err_detect ignore_err -i {songUrl} -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel error";
+            var args = $"-err_detect ignore_err -i {SongUrl} -f s16le -ar 48000 -vn -ac 2 pipe:1 -loglevel error";
             if (!_isLocal)
                 args = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 " + args;
             return Process.Start(new ProcessStartInfo

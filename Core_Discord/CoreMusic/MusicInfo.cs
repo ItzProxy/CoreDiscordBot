@@ -53,7 +53,7 @@ namespace Core_Discord.CoreMusic
             {
                 switch (ProviderType)
                 {
-                    case MusicType.Youtube:
+                    case MusicType.YouTube:
                         return Query;
                     case MusicType.Soundcloud:
                         return Query;
@@ -73,7 +73,7 @@ namespace Core_Discord.CoreMusic
         {
             get
             {
-                if (ProviderType == MusicType.Youtube)
+                if (ProviderType == MusicType.YouTube)
                     return _videoId ?? videoIdRegex.Match(Query)?.ToString();
                 return _videoId ?? "";
             }
