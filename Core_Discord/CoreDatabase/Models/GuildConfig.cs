@@ -14,6 +14,14 @@ namespace Core_Discord.CoreDatabase.Models
         public long AutoAssignRoleId { get; set; }
 
         //greet stuff to be implemented later
+        public bool SendDmGreetMessage { get; set; }
+        public string DmGreetMessageText { get; set; } = "Welcome to the %server% server, %user%!";
+
+        public bool SendChannelGreetMessage { get; set; }
+        public string ChannelGreetMessageText { get; set; } = "Welcome to the %server% server, %user%!";
+
+        public bool SendChannelByeMessage { get; set; }
+        public string ChannelByeMessageText { get; set; } = "%user% has left!";
 
         //music settings/voice settings
         public float DefaultMusicVolume = 1.0f;

@@ -12,6 +12,7 @@ using System.IO;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Net.WebSocket;
 using Google.Apis.Services;
+using DSharpPlus.EventArgs;
 //using NadekoBot.Modules.Music.Common;
 //using NadekoBot.Modules.Music.Common.Exceptions;
 //using NadekoBot.Modules.Music.Common.SongResolver;
@@ -27,6 +28,7 @@ namespace Core_Discord.CoreMusic
         private readonly Logger _log;
         private ICoreCredentials _cred;
         private readonly ConcurrentDictionary<long, float> _defaultVolume;
+        private readonly object locker = new object();
 
         public ConcurrentBag<long> GuildDc;
 
@@ -43,10 +45,42 @@ namespace Core_Discord.CoreMusic
             _cred = cred;
             _log = LogManager.GetCurrentClassLogger();
         }
-
+        //event
+        private Task Discord_GuildDeleted(GuildDeleteEventArgs e)
+        {
+            var m = DestroyPlayer()
+            return Task.CompletedTask;
+        }
+        /// <summary>
+        /// Destory Music Player
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task DestroyPlayer(long id)
+        {
+            if (MusicPlayers.TryRemove(id, out var mp))
+                await mp.Destroy();
+        }
+        public async Task Destroy()
+        {
+            _log.Warn("Destorying music player");
+            lock (locker)
+            {
+                Stop
+            }
+        }
+        public bool AutoDcGuild(long id)
+        {
+            bool value;
+            using(var uow = _db.UnitOfWork)
+            {
+                var c = uow.Guild.
+            }
+        }
         public Task Unload()
         {
-            throw new NotImplementedException();
+            _client.GuildDeleted -= Discord_GuildDeleted;
+            return Task.CompletedTask;
         }
     }
 }
