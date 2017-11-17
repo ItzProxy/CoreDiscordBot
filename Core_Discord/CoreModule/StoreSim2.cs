@@ -48,7 +48,8 @@ namespace Core_Discord.Store_Sim
                     Description = "Introduction to Store Simulator",
                     Title = "Main Menu"
                 };
-                intro.AddField
+                intro.AddField("Enter 'i'", "To manage Inventory", true);
+                intro.AddField("Enter 'e'", "To manage ")
                 await e.Message.RespondAsync($"*****************.\n");
                 await e.Message.RespondAsync($"Main Menu.\n");
                 await e.Message.RespondAsync($"Budget: {budget}.");
@@ -274,8 +275,8 @@ public async Task AddEmployee()
 }
 public int Fire(int search)
 {
+    List<Employee> storage;
 
-    stack<Employee> storage;
 
     while (!list.empty())
     {
@@ -293,9 +294,9 @@ public int Fire(int search)
     }
     EmployeeCost = Numbers.CalcEmployeeRate(list);
 }
-public async task Change(int search)
+public async Task Change(int search)
 {
-    stack<Employee> storage;
+    Stack<Employee> storage;
     float UInput1;
     int UInput2;
     var interactivity = e.Client.GetInteractivityModule();
@@ -450,15 +451,15 @@ public sealed class Product
     public int Stock { get; set; }
     public int order { get; set; }
 
-    public async Task printinfo()
+    public async Task printinfo(CommandContext e)
     {
-        await e.Message.RespondAsync("{0} Sell:${1} buy:${2} Stock:{3} Next Month's Order {4}\n", name, SellPrice, BuyPrice, Stock, order);
+        await e.Message.RespondAsync($"{name} Sell:${SellPrice} buy:${BuyPrice} Stock:{BuyPrice} Next Month's Order {Stock} - \n", name, SellPrice, BuyPrice, Stock, order);
     }
 }
 
 public class Accounting 
 {
-    public float NextMonth()
+    public float NextMonth(CommandContext e)
     {
 
         if (budget - Numbers.CalcMonthlyCost() < 0.0)
