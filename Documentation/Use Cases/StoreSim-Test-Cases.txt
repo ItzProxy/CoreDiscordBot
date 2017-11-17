@@ -9,5 +9,5 @@ Robustness Tests:
 - User inputs an incorrect command at a menu.
 - User does not input something in time at a menu.
 - user inputs something of an incorrect type when asked for something specific, like an int.
-- User fails to enter a command in time in the middle of something involving a queue, like
+- User fails to enter a command in time in the middle of something involving a queue or a new element, like hiring an employee
 - user hires 2 employees with the same employee number, and then calls to change the employee of that number.
