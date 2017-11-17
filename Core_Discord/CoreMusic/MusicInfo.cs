@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Core_Discord.CoreDatabase.Models;
 using Core_Discord.CoreExtensions;
 using System.Text.RegularExpressions;
 using DSharpPlus;
+using System.Linq;
 
 namespace Core_Discord.CoreMusic
 {
     /// <summary>
     /// What type of provider the song came from
     /// </summary>
-    public enum MusicType
-    {
-        Youtube,
-        Local,
-        Soundcloud
-
-    }
     public class MusicInfo
     {
 
