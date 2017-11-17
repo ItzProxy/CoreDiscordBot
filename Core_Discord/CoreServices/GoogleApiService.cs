@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using Core_Discord.CoreServices.Interfaces;
+using System.Xml;
 
 namespace Core_Discord.CoreServices
 {
@@ -46,20 +47,25 @@ namespace Core_Discord.CoreServices
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<string>> GetPlaylistTracksAsync(string playlistId, int count = 50)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<string>> GetRelatedVideosAsync(string url, int count = 1)
+        public async Task<IEnumerable<string>> GetPlaylistTracksAsync(string playlistId, int count = 50)
         {
             throw new NotImplementedException();
         }
         /// <summary>
-        /// 
+        /// Gets videos related to previous video
         /// </summary>
-        /// <param name="videoIds"></param>
+        /// <param name="url">Youtube URL</param>
+        /// <param name="count">number of videos to be returned</param>
         /// <returns></returns>
+        public async Task<IEnumerable<string>> GetRelatedVideosAsync(string url, int count = 1)
+        {
+            
+        }
+        /// <summary>
+        /// Gets the duration of a set of videos
+        /// </summary>
+        /// <param name="videoIds">video id</param>
+        /// <returns>id,time</returns>
         public async Task<IReadOnlyDictionary<string, TimeSpan>> GetVideoDurationsAsync(IEnumerable<string> videoIds)
         {
             await Task.Yield();
@@ -71,12 +77,23 @@ namespace Core_Discord.CoreServices
             {
                 return returnVideoDuration;
             }
-            
-            while(list.Count > 0)
+            int remaining = list.Count;
+            const int MAX_NUM_QUERY = 25;
+            while (remaining > 0)
             {
-                list.
+                int num = remaining > MAX_NUM_QUERY ? remaining : MAX_NUM_QUERY;
+                remaining -= num;
+                //get the videos from list
+                var ls = _youtube.Videos.List("contentDetails");
+                ls.Id = string.Join(",", list.Take(num));
+                list = list.Skip(num).ToList(); //gets remaining videos in list
+                var content = (await ls.ExecuteAsync().ConfigureAwait(false)).Items;
+                foreach(var m in content)
+                {
+                    returnVideoDuration.Add(m.Id, XmlConvert.ToTimeSpan(m.ContentDetails.Duration));//adds video id and time duration to dictionary
+                }
             }
-            throw new NotImplementedException();
+            return returnVideoDuration;
         }
 
         public Task<IEnumerable<(string Name, string Id, string Url)>> GetVideoInfosByKeywordAsync(string keywords, int count = 1)
