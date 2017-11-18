@@ -11,7 +11,7 @@ namespace Core_Discord.CoreDatabase
         CoreContext _context { get; }
 
         IBotConfigRepository BotConfig { get; } //fi
-
+        IGuildConfigRepository GuildConfig { get; }
         int Complete();
         Task<int> CompleteAsync();
     }

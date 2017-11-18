@@ -11,7 +11,8 @@ namespace Core_Discord.CoreDatabase
 
         private IBotConfigRepository _botConfig;
         public IBotConfigRepository BotConfig => _botConfig ?? ( _botConfig = new BotConfigRepository(_context));
-        
+        private IGuildConfigRepository _guildConfig;
+        public IGuildConfigRepository GuildConfig => _guildConfig ?? (_guildConfig = new GuildConfigRepository(_context));
         /// <summary>
         /// constructor gets related database for this bot
         /// </summary>
