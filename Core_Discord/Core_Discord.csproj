@@ -69,6 +69,7 @@
 	
 <ItemGroup>
   <Folder Include="CoreMigrations\" />
+  <Folder Include="CoreModule\StoreSim\" />
 </ItemGroup>
 
 </Project>

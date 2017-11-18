@@ -140,7 +140,11 @@ namespace Core_Discord.CoreMusic
                 try
                 {
                     buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
-                    var audio = await Get
+                    
+                }
+                catch
+                {
+
                 }
             }
 

@@ -56,7 +56,7 @@ namespace Core_Discord.CoreMusic
             {
                 Directory.CreateDirectory(MusicPath);
             }
-            _defaultVolume = new ConcurrentDictionary<long,float>().
+            //_defaultVolume = new Concu
         }
         public async Task Stop()
         {
