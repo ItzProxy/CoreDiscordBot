@@ -18,7 +18,7 @@ namespace Core_Discord.CoreMusic
         public MusicType ProviderType { get; set; } //What type provider provided the file
         public string Query { get; set; }
         public string Title { get; set; } //title of song
-        public Func<Task<string>> Uri { get; set; } //url of file (file.path or http)
+        public Func<Task<string>> Url { get; set; } //url of file (file.path or http)
         public string Thumbnail { get; set; } //variable for the thumbnail of video/file
         public string QuerierName { get; set; }
         public TimeSpan TotalTime { get; set; } = TimeSpan.Zero; // sets time

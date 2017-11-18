@@ -9,6 +9,9 @@ using DSharpPlus;
 using System.Linq;
 using DSharpPlus.Entities;
 using NLog;
+using Core_Discord.CoreServices.Interfaces;
+using Core_Discord.Music;
+using Core_Discord.CoreDatabase.Models;
 
 /// <summary>
 /// Built using an Outdated Music Player for Discord
@@ -24,13 +27,16 @@ namespace Core_Discord.CoreMusic
         Playing,
         Completed
     }
-    public sealed class CoreMusicPlayer
+    public class CoreMusicPlayer
     {
         private Logger _log;
+        private readonly object locker = new object();
         private readonly Thread _player;
         public VoiceNextClient VoiceChannel {get; private set;}
         public CancellationTokenSource CancellationTokenSource { get; private set; }
         public DiscordChannel TextChannel { get;  set; }
+        private readonly IGoogleApiService _google;
+        private CoreMusicService _musicService;
         //logger
 
         private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
@@ -88,16 +94,58 @@ namespace Core_Discord.CoreMusic
                     : new TimeSpan(songs.Sum(s => s.TotalTime.Ticks));
             }
         }
+        /// <summary>
+        /// getter for <int,MusicInfo>
+        /// </summary>
+        public (int Index, MusicInfo Current) Current
+        {
+            get
+            {
+                if (Stopped)
+                    return (0, null);
+                return Queue.Current;
+            }
+        }
 
-        public CoreMusicPlayer(VoiceNextClient voice, DiscordChannel textChan, float volume)
+        public CoreMusicPlayer(VoiceNextClient voice, DiscordChannel textChan, IGoogleApiService googleApiService,float volume, CoreMusicService musicService)
         {
             _log = LogManager.GetCurrentClassLogger();
             Volume = volume;
             TextChannel = textChan;
             VoiceChannel = voice; //set voice channel up
             CancellationTokenSource = new CancellationTokenSource();
-            
-            _musicService = 
+            _google = googleApiService;
+            _musicService = musicService;
+            _player = new Thread(new ThreadStart(Player));
         }
+
+        private async void Player()
+        {
+            _bytesSent = 0;
+            cancel = false;
+            CancellationToken cancellationToken;
+            (int Index, MusicInfo song) data;
+            lock (locker) {
+                data = Queue.Current;
+                cancellationToken = CancellationTokenSource.Token;
+                manualSkip = false;
+                manualIndex = false;
+            }
+
+            if(data.song != null)
+            {
+                _log.Info($"Starting Player for {VoiceChannel.Client.CurrentUser.Username}");
+                CoreMusicHelper buffer = null;
+
+                try
+                {
+                    buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
+                    var audio = await Get
+                }
+            }
+
+        }
+
+
     }
 }

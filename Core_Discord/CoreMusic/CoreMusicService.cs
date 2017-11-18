@@ -38,17 +38,34 @@ namespace Core_Discord.CoreMusic
 
 
 
-        public CoreMusicService(DiscordClient client, DbService db, ICoreCredentials cred, Core core)
+        public CoreMusicService(DiscordClient client, 
+            DbService db, 
+            ICoreCredentials cred, 
+            Core core,
+            IGoogleApiService google)
         {
+            apiService = google;
             _client = client;
             _db = db;
             _cred = cred;
             _log = LogManager.GetCurrentClassLogger();
+
+            _client.GuildDeleted += Discord_GuildDeleted;
+            //create music path
+            if(!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), MusicPath)))
+            {
+                Directory.CreateDirectory(MusicPath);
+            }
+            _defaultVolume = new ConcurrentDictionary<long,float>().
+        }
+        public async Task Stop()
+        {
+
         }
         //event
         private Task Discord_GuildDeleted(GuildDeleteEventArgs e)
         {
-            var m = DestroyPlayer()
+            var m = DestroyPlayer();
             return Task.CompletedTask;
         }
         /// <summary>
@@ -61,20 +78,12 @@ namespace Core_Discord.CoreMusic
             if (MusicPlayers.TryRemove(id, out var mp))
                 await mp.Destroy();
         }
-        public async Task Destroy()
+        public async Task DestroyPlayer()
         {
             _log.Warn("Destorying music player");
             lock (locker)
             {
                 Stop
-            }
-        }
-        public bool AutoDcGuild(long id)
-        {
-            bool value;
-            using(var uow = _db.UnitOfWork)
-            {
-                var c = uow.Guild.
             }
         }
         public Task Unload()
