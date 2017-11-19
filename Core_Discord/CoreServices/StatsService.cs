@@ -22,7 +22,7 @@ namespace Core_Discord.CoreServices
         public const string BotVersion = "2.4.4";
 
         public string Author => "ItzProxy#0638";
-        public string Library => "Discord.Net";
+        public string Library => "DSharplus";
         public string Heap => Math.Round((double)GC.GetTotalMemory(false) / 1.MiB(), 2)
             .ToString(CultureInfo.InvariantCulture);
         public double MessagesPerSecond => MessageCounter / GetUptime().TotalSeconds;
