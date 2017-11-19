@@ -82,7 +82,7 @@ namespace Core_Discord
         public async Task JoinVC(CommandContext e, DiscordChannel chan = null)
         {
             await e.TriggerTypingAsync();
-            var vnext = e.Client.GetVoiceNextClient();
+            var vnext = e.Client.GetVoiceNext();
             if(vnext == null)
             {
                 await e.RespondAsync("VoiceNextService not enabled or configured");

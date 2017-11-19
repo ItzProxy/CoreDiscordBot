@@ -7,6 +7,7 @@ namespace Core_Discord.CoreDatabase.Repository
 {
     public interface IGuildConfigRepository : IRepository<GuildConfig>
     {
-        GuildConfig GetOrCreate(Func<DbSet<GuildConfig>, IQueryable<GuildConfig>> includes = null);
+        GuildConfig GetOrCreate(long guildId, Func<DbSet<GuildConfig>, IQueryable<GuildConfig>> includes = null);
+        ExpSettings ExpSettingsFor(long guildId);
     }
 }

@@ -11,14 +11,16 @@ namespace Core_Discord.CoreMusic
 {
     [Group("music")]
     [Description("Contains all music related commands")]
-    public sealed class CoreMusicCommands
+    public partial class CoreMusicPlayer
     {
         private string requiredRoles;
 
         [Command("play")]
+
         [Description("plays music of the given url")]
-        public async Task Play(CommandContext e)
+        public async Task Play(CommandContext e, )
         {
+            var mp = await _musicService.
             await e.RespondAsync($"Not yet implemented yet").ConfigureAwait(false);
         }
     }

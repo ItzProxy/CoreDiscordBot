@@ -8,10 +8,12 @@ using System.Linq;
 
 namespace Core_Discord.CoreMusic
 {
-    public class CoreMusicQueue
+    public class CoreMusicQueue : IDisposable
     {
         private LinkedList<MusicInfo> Songs { get; set; } = new LinkedList<MusicInfo>(); //linked list
         private int _currIndex = 0;
+        private readonly object locker = new object(); // semaphore
+        private TaskCompletionSource<bool> nextSource { get; } = new TaskCompletionSource<bool>(); //get next source after completeion
         public int CurrIndex //get amd set current index on thread
         {
             get
@@ -41,8 +43,7 @@ namespace Core_Discord.CoreMusic
                 return (cur, Songs.ElementAtOrDefault(cur));
             }
         }
-        private readonly object locker = new object(); // semaphore
-        private TaskCompletionSource<bool> nextSource { get; } = new TaskCompletionSource<bool>(); //get next source after completeion
+       
         /// <summary>
         /// returns current count in list
         /// </summary>
