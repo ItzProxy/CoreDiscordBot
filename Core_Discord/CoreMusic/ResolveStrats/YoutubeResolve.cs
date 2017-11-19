@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using Core_Discord.CoreServices;
+using Core_Discord.CoreDatabase.Models;
+
 namespace Core_Discord.CoreMusic.ResolveStrats
 {
     public class YoutubeResolve : IResolver
@@ -20,9 +23,9 @@ namespace Core_Discord.CoreMusic.ResolveStrats
             string[] data;
             try
             {
-                using (var ytdl = new YtdlOperation())
+                using (var youdl = new YoutubeDLOp())
                 {
-                    data = (await ytdl.GetDataAsync(query)).Split('\n');
+                    data = (await youdl.GetDataAsync(query)).Split('\n');
                 }
                 if (data.Length < 6)
                 {
@@ -36,12 +39,12 @@ namespace Core_Discord.CoreMusic.ResolveStrats
                 return new MusicInfo()
                 {
                     Title = data[0],
-                    VideoId = data[1],
-                    Uri = async () =>
+                    _videoId = data[1],
+                    Url = async () =>
                     {
-                        using (var ytdl = new YtdlOperation())
+                        using (var youtubeDl = new YoutubeDLOp())
                         {
-                            data = (await ytdl.GetDataAsync(query)).Split('\n');
+                            data = (await youtubeDl.GetDataAsync(query)).Split('\n');
                         }
                         if (data.Length < 6)
                         {
