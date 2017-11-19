@@ -10,6 +10,7 @@ using Core_Discord.CoreServices.Interfaces;
 using NLog;
 using System.IO;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.VoiceNext;
 using DSharpPlus.Net.WebSocket;
 using Google.Apis.Services;
 using DSharpPlus.EventArgs;
@@ -17,6 +18,8 @@ using DSharpPlus.EventArgs;
 //using NadekoBot.Modules.Music.Common.Exceptions;
 //using NadekoBot.Modules.Music.Common.SongResolver;
 using Core_Discord.CoreServices;
+using DSharpPlus.Entities;
+using static Core_Discord.CoreMusic.CoreMusicExceptions;
 
 namespace Core_Discord.CoreMusic
 {
@@ -38,9 +41,9 @@ namespace Core_Discord.CoreMusic
 
 
 
-        public CoreMusicService(DiscordClient client, 
-            DbService db, 
-            ICoreCredentials cred, 
+        public CoreMusicService(DiscordClient client,
+            DbService db,
+            ICoreCredentials cred,
             Core core,
             IGoogleApiService google)
         {
@@ -52,15 +55,34 @@ namespace Core_Discord.CoreMusic
 
             _client.GuildDeleted += Discord_GuildDeleted;
             //create music path
-            if(!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), MusicPath)))
+            if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), MusicPath)))
             {
                 Directory.CreateDirectory(MusicPath);
             }
             //_defaultVolume = new Concu
         }
-        public async Task Stop()
+        //setup based on user 
+        public async Task<CoreMusicPlayer> GetOrCreatePlayer(CommandContext e)
         {
-
+            var gUsr = e.User;
+            var txtCh = e.Channel;
+            var vCh = e.Member?.VoiceState?.Channel;
+            if(vCh == null)
+            {
+                _log.Warn($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one");
+                e.RespondAsync($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one").ConfigureAwait(false);
+                throw new NotInVOiceChannelException();
+            }
+            return GetOrCreatePlayer(e.Guild.Id, vCh, txtCh);
+        }
+        public async Task<CoreMusicPlayer> GetOrCreatePlayer(ulong guild, DiscordChannel voiceNext, DiscordChannel textChan)
+        {
+            await return MusicPlayers.GetOrAdd(guild, async _ =>
+            {
+                float vol = 1.0f;
+                var avc = await voiceNext.ConnectAsync();
+                var mp = new CoreMusicPlayer(voiceNext, textChan, apiService, vol, this);
+            })
         }
         //event
         private Task Discord_GuildDeleted(GuildDeleteEventArgs e)

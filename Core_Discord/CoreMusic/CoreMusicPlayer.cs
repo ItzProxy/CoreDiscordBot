@@ -27,7 +27,7 @@ namespace Core_Discord.CoreMusic
         Playing,
         Completed
     }
-    public class CoreMusicPlayer
+    public partial class CoreMusicPlayer
     {
         private Logger _log;
         private readonly object locker = new object();
@@ -140,7 +140,7 @@ namespace Core_Discord.CoreMusic
                 try
                 {
                     buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
-                    
+                    var ac = await 
                 }
                 catch
                 {
