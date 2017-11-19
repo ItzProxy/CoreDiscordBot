@@ -84,7 +84,29 @@ namespace Core_Discord.CoreMusic
                 float vol = 1.0f;
                 var avc = voiceNext.Channel;
                 var mp = new CoreMusicPlayer(voiceNext, textChan, apiService, vol, this);
+
+                DiscordMessage playingMesage = null;
+                DiscordMessage lastFinishedMessage = null;
+
+                //add implementation for event trigger
+                mp.OnCompleted += (s, song) =>
+                {
+                    lastFinishedMessage?.DeleteAsync();
+                    try
+                    {
+
+                    }
+                };
+
             });
+        }
+        public CoreMusicPlayer GetPlayerOrDefault(long guildId)
+        {
+            throw new NotImplementedException();
+        }
+        public async Task TryQueueRelatedSongAsync(MusicInfo song, DiscordChannel textChan, VoiceNextExtension vch)
+        {
+            throw new NotImplementedException();
         }
         //event
         private Task Discord_GuildDeleted(GuildDeleteEventArgs e)
@@ -99,15 +121,15 @@ namespace Core_Discord.CoreMusic
         /// <returns></returns>
         public async Task DestroyPlayer(long id)
         {
+            _log.Warn("Destorying music player");
             if (MusicPlayers.TryRemove(id, out var mp))
                 await mp.Destroy();
         }
-        public async Task DestroyPlayer()
+        public async Task DestroyAllPlayers()
         {
-            _log.Warn("Destorying music player");
-            lock (locker)
+            foreach (var key in MusicPlayers.Keys)
             {
-                Stop
+                await DestroyPlayer(key);
             }
         }
         public Task Unload()
