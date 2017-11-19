@@ -24,7 +24,7 @@ namespace Core_Discord
         public async Task testIntFloatChar(CommandContext e)
         {
             string result;
-            var interactivity = e.Client.GetInteractivityModule();
+            var interactivity = e.Client.GetInteractivity();
             await e.RespondAsync("Awaiting response...");
             var msg = interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.ToLower(), out var value) && Char.IsLetter(value)),TimeSpan.FromSeconds(60));
             switch (Convert.ToChar(msg.Result.Message.Content))
@@ -49,7 +49,7 @@ namespace Core_Discord
         public async Task testFloat (CommandContext e)
         {
             string result;
-            var interactivity = e.Client.GetInteractivityModule();
+            var interactivity = e.Client.GetInteractivity();
             await e.RespondAsync("Awaiting response...");
             var msg = interactivity.WaitForMessageAsync(x => x.Content == x.Content, TimeSpan.FromSeconds(60));
             if(float.TryParse(msg.Result.Message.Content,out var res))

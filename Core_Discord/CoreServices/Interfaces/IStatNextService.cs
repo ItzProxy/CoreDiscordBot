@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Core_Discord.CoreServices
 {
-    public interface IStateNextService : CoreService
+    public interface IStatNextService : CoreService
     {
         string Author { get; }
         long CommandsRan { get; }

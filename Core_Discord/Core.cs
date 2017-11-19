@@ -29,11 +29,11 @@ namespace Core_Discord
 
         public CoreCredentials Credentials { get; set; }
         private readonly BotConfig _config;
-        public DiscordClient Discord { get; set; }
+        public DiscordClient _discord { get; set; }
         private CoreCommands Commands { get; }
-        private VoiceNextClient VoiceService { get; }
-        private CommandsNextModule CommandsNextService { get; }
-        private InteractivityModule InteractivityService { get; }
+        private VoiceNextExtension VoiceService { get; }
+        private CommandsNextExtension CommandsNextService { get; }
+        private InteractivityExtension InteractivityService { get; }
         private Timer TimeGuard { get; set; }
         private readonly DbService _db;
 
@@ -58,26 +58,26 @@ namespace Core_Discord
                 LargeThreshold = 250,
                 LogLevel = DSharpPlus.LogLevel.Debug,
                 Token = Credentials.Token,
-                TokenType = Credentials.UseUserToken ? TokenType.User : TokenType.Bot,
+                TokenType = Credentials.UseUserToken ? TokenType.Bot : TokenType.Bot,
                 UseInternalLogHandler = false,
                 ShardId = shardId,
                 ShardCount = Credentials.TotalShards,
-                EnableCompression = true,
+                GatewayCompressionLevel = GatewayCompressionLevel.Stream,
                 MessageCacheSize = 50,
                 AutomaticGuildSync = true,
                 DateTimeFormat = "dd-MM-yyyy HH:mm:ss zzz"
             };
 
-            Discord = new DiscordClient(coreConfig);
+            _discord = new DiscordClient(coreConfig);
 
             //attach Discord events
-            Discord.DebugLogger.LogMessageReceived += this.DebugLogger_LogMessageReceived;
-            Discord.Ready += this.Discord_Ready;
-            Discord.GuildAvailable += this.Discord_GuildAvailable;
-            Discord.MessageCreated += this.Discord_MessageCreated;
-            Discord.ClientErrored += this.Discord_ClientErrored;
-            Discord.SocketErrored += this.Discord_SocketError;
-            Discord.GuildCreated += this.Discord_GuildAvailable;
+            _discord.DebugLogger.LogMessageReceived += this.DebugLogger_LogMessageReceived;
+            _discord.Ready += this.Discord_Ready;
+            _discord.GuildAvailable += this.Discord_GuildAvailable;
+            _discord.MessageCreated += this.Discord_MessageCreated;
+            _discord.ClientErrored += this.Discord_ClientErrored;
+            _discord.SocketErrored += this.Discord_SocketError;
+            _discord.GuildCreated += this.Discord_GuildAvailable;
 
             var voiceConfig = new VoiceNextConfiguration
             {
@@ -86,9 +86,9 @@ namespace Core_Discord
             };
 
             //enable voice service
-            this.VoiceService = this.Discord.UseVoiceNext(voiceConfig);
+            this.VoiceService = this._discord.UseVoiceNext(voiceConfig);
 
-            var depoBuild = new DependencyCollectionBuilder();
+            var depoBuild = new CoreServiceProvider();
 
 
             //add dependency here
@@ -106,13 +106,13 @@ namespace Core_Discord
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 CaseSensitive = true,
-                Dependencies = depoBuild.Build(),
-                SelfBot = Credentials.UseUserToken,
+                Services = depoBuild,
+                Selfbot = Credentials.UseUserToken,
                 IgnoreExtraArguments = false
             };
 
             //attach command events
-            this.CommandsNextService = Discord.UseCommandsNext(commandConfig);
+            this.CommandsNextService = _discord.UseCommandsNext(commandConfig);
             this.CommandsNextService.CommandErrored += this.CommandsNextService_CommandErrored;
             this.CommandsNextService.CommandExecuted += this.CommandsNextService_CommandExecuted;
 
@@ -123,7 +123,7 @@ namespace Core_Discord
 
             var interConfig = new InteractivityConfiguration()
             {
-                PaginationBehaviour = TimeoutBehaviour.Delete,
+                PaginationBehaviour = TimeoutBehaviour.DeleteMessage,
                 //default paginationtimeout (30 seconds)
                 PaginationTimeout = TimeSpan.FromSeconds(30),
                 //timeout for current action
@@ -131,7 +131,7 @@ namespace Core_Discord
             };
 
             //attach interactive component
-            this.InteractivityService = Discord.UseInteractivity(interConfig);
+            this.InteractivityService = _discord.UseInteractivity(interConfig);
            //this.CommandsNextService.RegisterCommands<CoreInteractivityModuleCommands>();
             //register commands from coreinteractivitymodulecommands
             //this.CommandsNextService.RegisterCommands(typeof(CoreInteractivityModuleCommands).GetTypeInfo().Assembly); 
@@ -140,7 +140,7 @@ namespace Core_Discord
 
         public async Task RunAsync()
         {
-            await Discord.ConnectAsync().ConfigureAwait(false);
+            await _discord.ConnectAsync().ConfigureAwait(false);
             await Task.Delay(-1).ConfigureAwait(false);
         }
         /// <summary>
@@ -161,7 +161,7 @@ namespace Core_Discord
             Console.Write("[{0}] ", tag);
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("[{0}] ", string.Concat("SHARD ", this.Discord.ShardId.ToString("00")));
+            Console.Write("[{0}] ", string.Concat("SHARD ", this._discord.ShardId.ToString("00")));
 
             switch (e.Level)
             {
@@ -211,7 +211,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_GuildAvailable(GuildCreateEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild available: {e.Guild.Name}", DateTime.Now);
+            _discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild available: {e.Guild.Name}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -221,7 +221,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_GuildCreated(GuildCreateEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild created: {e.Guild.Name}", DateTime.Now);
+            _discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "DSPlus Test", $"Guild created: {e.Guild.Name}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -241,7 +241,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task Discord_ClientErrored(ClientErrorEventArgs e)
         {
-            this.Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "DSP Test", $"Client threw an exception: {e.Exception.GetType()}", DateTime.Now);
+            this._discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "DSP Test", $"Client threw an exception: {e.Exception.GetType()}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -251,7 +251,7 @@ namespace Core_Discord
         /// <returns>Task</returns>
         private Task Discord_SocketError(SocketErrorEventArgs e)
         {
-            this.Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "WebSocket", $"WS threw an exception: {e.Exception.GetType()}", DateTime.Now);
+            this._discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "WebSocket", $"WS threw an exception: {e.Exception.GetType()}", DateTime.Now);
             return Task.Delay(0);
         }
         /// <summary>
@@ -265,7 +265,7 @@ namespace Core_Discord
             if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                 return;
 
-            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            _discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 
             if(e.Exception is UnauthorizedAccessException)
             {
@@ -311,7 +311,7 @@ namespace Core_Discord
                     Description = $"`{e.Exception.GetType()}` occured when executing `{e.Command.QualifiedName}`.",
                     Timestamp = DateTime.UtcNow
                 };
-                embed.WithFooter(Discord.CurrentUser.Username, Discord.CurrentUser.AvatarUrl)
+                embed.WithFooter(_discord.CurrentUser.Username, _discord.CurrentUser.AvatarUrl)
                     .AddField("Message", "File with full details has been attached.", false);
                 await e.Context.Channel.SendFileAsync(stream, "error.txt", "\u200b", embed: embed.Build()).ConfigureAwait(false);
             }
@@ -323,7 +323,7 @@ namespace Core_Discord
         /// <returns></returns>
         private Task CommandsNextService_CommandExecuted(CommandExecutionEventArgs e)
         {
-            Discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "CommandsNext", $"{e.Context.User.Username} executed '{e.Command.QualifiedName}' in {e.Context.Channel.Name}", DateTime.Now);
+            _discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "CommandsNext", $"{e.Context.User.Username} executed '{e.Command.QualifiedName}' in {e.Context.Channel.Name}", DateTime.Now);
             return Task.Delay(0);
         }
 
@@ -335,7 +335,7 @@ namespace Core_Discord
         {
             try
             {
-                this.Discord.UpdateStatusAsync(new DiscordGame("CS 476 Project")).ConfigureAwait(false).GetAwaiter().GetResult();
+                this._discord.UpdateStatusAsync(new DiscordActivity("CS 476 Project")).ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (Exception) { }
         }

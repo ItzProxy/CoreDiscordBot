@@ -34,7 +34,7 @@ namespace Core_Discord
             [Description("What are the options to chose from")] params DiscordEmoji[] options)
         {
             //get the interactivity module from client
-            var inter = e.Client.GetInteractivityModule();
+            var inter = e.Client.GetInteractivity();
             ///set poll options from parameters
             var pollOptions = options.Select(op => op.ToString());
 

@@ -18,8 +18,9 @@ using DSharpPlus.EventArgs;
 //using NadekoBot.Modules.Music.Common.Exceptions;
 //using NadekoBot.Modules.Music.Common.SongResolver;
 using Core_Discord.CoreServices;
-using DSharpPlus.Entities;
+//using DSharpPlus.Entities;
 using static Core_Discord.CoreMusic.CoreMusicExceptions;
+using DSharpPlus.Entities;
 
 namespace Core_Discord.CoreMusic
 {
@@ -70,19 +71,20 @@ namespace Core_Discord.CoreMusic
             if(vCh == null)
             {
                 _log.Warn($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one");
-                e.RespondAsync($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one").ConfigureAwait(false);
+                await e.RespondAsync($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one").ConfigureAwait(false);
                 throw new NotInVOiceChannelException();
             }
-            return GetOrCreatePlayer(e.Guild.Id, vCh, txtCh);
+            var vnc = await vCh.ConnectAsync().ConfigureAwait(false);
+            return (await GetOrCreatePlayer(e.Guild.Id, vnc, txtCh));
         }
-        public async Task<CoreMusicPlayer> GetOrCreatePlayer(ulong guild, DiscordChannel voiceNext, DiscordChannel textChan)
+        public async Task<CoreMusicPlayer> GetOrCreatePlayer(ulong guild, VoiceNextConnection voiceNext, DiscordChannel textChan)
         {
-            await return MusicPlayers.GetOrAdd(guild, async _ =>
+            return await MusicPlayers.GetOrAdd(guild, _ =>
             {
                 float vol = 1.0f;
-                var avc = await voiceNext.ConnectAsync();
+                var avc = voiceNext.Channel;
                 var mp = new CoreMusicPlayer(voiceNext, textChan, apiService, vol, this);
-            })
+            });
         }
         //event
         private Task Discord_GuildDeleted(GuildDeleteEventArgs e)

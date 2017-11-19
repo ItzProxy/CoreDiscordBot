@@ -30,9 +30,9 @@ namespace Core_Discord.CoreMusic
     public partial class CoreMusicPlayer
     {
         private Logger _log;
-        private readonly object locker = new object();
+        private readonly object locker = new object(); //semaphore
         private readonly Thread _player;
-        public VoiceNextClient VoiceChannel {get; private set;}
+        public VoiceNextConnection VoiceChannel {get; private set;}
         public CancellationTokenSource CancellationTokenSource { get; private set; }
         public DiscordChannel TextChannel { get;  set; }
         private readonly IGoogleApiService _google;
@@ -107,7 +107,7 @@ namespace Core_Discord.CoreMusic
             }
         }
 
-        public CoreMusicPlayer(VoiceNextClient voice, DiscordChannel textChan, IGoogleApiService googleApiService,float volume, CoreMusicService musicService)
+        public CoreMusicPlayer(VoiceNextConnection voice, DiscordChannel textChan, IGoogleApiService googleApiService,float volume, CoreMusicService musicService)
         {
             _log = LogManager.GetCurrentClassLogger();
             Volume = volume;
@@ -134,13 +134,17 @@ namespace Core_Discord.CoreMusic
 
             if(data.song != null)
             {
-                _log.Info($"Starting Player for {VoiceChannel.Client.CurrentUser.Username}");
+                _log.Info($"Starting Player for {TextChannel.c CurrentUser.Username}");
                 CoreMusicHelper buffer = null;
-
+                //try to get voice 
                 try
                 {
                     buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
                     var ac = await 
+                    if(ac == null)
+                    {
+                        VoiceChannel 
+                    }
                 }
                 catch
                 {
