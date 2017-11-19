@@ -9,8 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="CoreModule\StoreSim\**" />
     <Compile Remove="CoreServices\Database\**" />
+    <EmbeddedResource Remove="CoreModule\StoreSim\**" />
     <EmbeddedResource Remove="CoreServices\Database\**" />
+    <None Remove="CoreModule\StoreSim\**" />
     <None Remove="CoreServices\Database\**" />
   </ItemGroup>
 
@@ -69,7 +72,6 @@
 	
 <ItemGroup>
   <Folder Include="CoreMigrations\" />
-  <Folder Include="CoreModule\StoreSim\" />
 </ItemGroup>
 
 </Project>
