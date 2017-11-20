@@ -170,7 +170,7 @@ namespace Core_Discord.CoreModule.StoreSim
                 {
                     case 'a':
                         await _ctx.RespondAsync("Not fixed yet").ConfigureAwait(false);
-                        //await EList.AddEmployee(_ctx);
+                        await EList.AddEmployee(_ctx);
                         break;
                     case 'f':
                         await _ctx.Message.RespondAsync($"Enter employee number (all employees with this number will be fired):");
@@ -219,9 +219,9 @@ namespace Core_Discord.CoreModule.StoreSim
                     Color = DiscordColor.Blue
                 };
                 AMenu.ClearFields();
-                AMenu.AddField("Enter r to roll over month", "", true);
-                AMenu.AddField("Enter c to alter budget by adding or removing money", "", true);
-                AMenu.AddField("Enter q to quit", "", true);
+                AMenu.AddField("Enter 'r'", "To roll over month", true);
+                AMenu.AddField("Enter 'c'", "To alter budget by adding or removing money", true);
+                AMenu.AddField("Enter 'q'", "To quit Account Menu", true);
                 await _ctx.RespondAsync(embed: AMenu);
                 var mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.ToLower(), out var value) && Char.IsLetter(value)), TimeSpan.FromSeconds(60));
                 switch (Convert.ToChar(mchoice.Message.Content))
@@ -251,40 +251,38 @@ namespace Core_Discord.CoreModule.StoreSim
         public float EmployeeCost { get; set; }
         public List<Employee> list { get; set; } = new List<Employee>();
 
-        //public async Task AddEmployee(CommandContext e)
-        //{
-        //    TimeSpan TimeWait = TimeSpan.FromSeconds(60);
-        //    Employee newEm;
-        //    float UInput1;
-        //    int UInput2;
-        //    string UInput3;
-        //    var interactivity = e.Client.GetInteractivity();
-        //    //set values   
-        //    await e.RespondAsync($"Enter new employee's name:");
-        //    UInput3 = await interactivity.WaitForMessageAsync((x => x.Content.Any() ? true : false), TimeWait),
-        //    newEm.Name = UInput3;
-        //    await e.Message.RespondAsync($"enter new emloyee's emloyee number\n", UInput2, int);
-        //    await e.Message.RespondAsync($"(note: if 2 employee's have the same number both will have their shift changed in the same command, and both will be fired at once):", UInput2, int);
-        //    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-        //    newEm.EmNum = UInput2;
-        //    await e.Message.RespondAsync($"enter new emloyee's pay rate:", UInput2, int);
-        //    UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
-        //    newEm.Rate = UInput1;
-        //    await e.Message.RespondAsync($"enter hour mark newemployee's shift start time:", UInput2, int);
-        //    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-        //    newEm.StartH = UInput2;
-        //    await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
-        //    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-        //    list.head.StartM = UInput2;
-        //    await e.Message.RespondAsync($"enter hour mark newemployee's shift end time:", UInput2, int);
-        //    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-        //    list.head.EndH = UInput2;
-        //    await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
-        //    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-        //    list.head.EndM = UInput2;
-        //    list.push(newEm);
-        //    EmployeeCost = Numbers.CalcEmployeeRate(list);
-        //}
+        public async Task AddEmployee(CommandContext e)
+        {
+            TimeSpan TimeWait = TimeSpan.FromSeconds(60);
+            Employee newEm = new Employee();
+
+            var interactivity = e.Client.GetInteractivity();
+            //set values   
+            await e.RespondAsync($"Enter new employee's name:");
+            var UInput3 = await interactivity.WaitForMessageAsync((x => x.Content == x.Content), TimeWait);
+            newEm.Name = UInput3;
+            await e.Message.RespondAsync($"enter new emloyee's emloyee number\n", UInput2, int);
+            await e.Message.RespondAsync($"(note: if 2 employee's have the same number both will have their shift changed in the same command, and both will be fired at once):", UInput2, int);
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+            newEm.EmNum = UInput2;
+            await e.Message.RespondAsync($"enter new emloyee's pay rate:", UInput2, int);
+            UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
+            newEm.Rate = UInput1;
+            await e.Message.RespondAsync($"enter hour mark newemployee's shift start time:", UInput2, int);
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+            newEm.StartH = UInput2;
+            await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+            list.head.StartM = UInput2;
+            await e.Message.RespondAsync($"enter hour mark newemployee's shift end time:", UInput2, int);
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+            list.head.EndH = UInput2;
+            await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+            list.head.EndM = UInput2;
+            list.push(newEm);
+            EmployeeCost = Numbers.CalcEmployeeRate(list);
+        }
         //public int Fire(int search)
         //{
         //list.Remove(MySqlX =)
@@ -297,7 +295,7 @@ namespace Core_Discord.CoreModule.StoreSim
         //        list.pop();
         //    }
         //    EmployeeCost = new Calculator().CalcEmployeeRate(list);
-        }
+    }
     //    public async Task Change(int search, CommandContext e, List<Employee> list)
     //    {
 

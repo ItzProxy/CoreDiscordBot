@@ -26,17 +26,6 @@ namespace Core_Discord
 
             await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}!").ConfigureAwait(false);
         }
-
-        public async Task HelloWorld(CommandContext e)
-        {
-            await e.TriggerTypingAsync();
-
-            var server = e.Guild.Name;
-            var user = e.Member.Mention;
-            var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
-
-            await e.Message.RespondAsync($"{emoji} Hello, {user}! Welcome to {server}").ConfigureAwait(false);
-        }
         /// <summary>
         /// When called gets the ping of the Discord Client to the Discord bot
         /// </summary>
