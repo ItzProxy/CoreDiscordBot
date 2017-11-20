@@ -25,7 +25,7 @@ namespace Core_Discord.CoreModule.StoreSim
         public float budget { get; set; } = 10000.00f;
         public EmployeeList EList { get; set; } //*
         public InventoryList IList { get; set; } //*
-        //public Accounting Account { get; set; } //*
+        public Accounting Account { get; set; } //*
         public Calculator Numbers { get; set; } //*
 
         protected CommandContext _ctx;
@@ -39,7 +39,7 @@ namespace Core_Discord.CoreModule.StoreSim
             var interactivity = e.Client.GetInteractivity();
             EList = new EmployeeList();
             IList = new InventoryList();
-            //Account = new Accounting();
+            Account = new Accounting();
             Numbers = new Calculator();
             while (!done)
             {
@@ -89,7 +89,19 @@ namespace Core_Discord.CoreModule.StoreSim
                 };
                 intro.AddField("Budget", $"{budget}", true);
                 intro.AddField("Next Month's Order cost", $"{IList.OrderCost}", false);
-                intro.AddField("Product List", $"{string.Join(",", IList.InvList)}", true);
+                if (IList.InvList.Count <= 0)
+                {
+                    intro.AddField("Inventory:", "Empty");
+                }
+                else
+                {
+                    string invString = string.Empty;
+                    foreach (var i in EList.list)
+                    {
+                        invString += i.ToString();
+                    }
+                    intro.AddField("Inventory:", invString);
+                }
                 await _ctx.RespondAsync(embed: intro); //display the intro to inventory menu
 
                 var IMenu = new DiscordEmbedBuilder(intro);
@@ -228,7 +240,7 @@ namespace Core_Discord.CoreModule.StoreSim
                 switch (Convert.ToChar(mchoice.Message.Content))
                 {
                     case 'r':
-                        Account.NextMonth(_ctx,budget);
+                        await Account.NextMonth(_ctx,budget,EList.EmployeeCost,IList.OrderCost);
                         await _ctx.RespondAsync("Not fixed yet").ConfigureAwait(false);
                         break;
                     case 'c':
@@ -434,7 +446,7 @@ namespace Core_Discord.CoreModule.StoreSim
             //OrderCost = new Calculator().CalcOrderCost(InvList);
             await e.RespondAsync("Not Implemented yet").ConfigureAwait(false);
         }
-        public async Task Sell(string search)
+        public async Task Sell(string search, CommandContext e)
         {
 
             //while (!list.empty())

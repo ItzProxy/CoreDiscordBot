@@ -39,7 +39,7 @@ namespace Core_Discord.CoreMusic
         private readonly IGoogleApiService _google;
         private CoreMusicService _musicService;
         //logger
-
+        
         private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
 
         private TaskCompletionSource<bool> pauseTaskSource { get; set; } = null;
@@ -118,42 +118,47 @@ namespace Core_Discord.CoreMusic
             _google = googleApiService;
             _musicService = musicService;
             _player = new Thread(new ThreadStart(Player));
+            _player.Start();
         }
 
         private async void Player()
         {
-            _bytesSent = 0;
-            cancel = false;
-            CancellationToken cancellationToken;
-            (int Index, MusicInfo song) data;
-            lock (locker) {
-                data = Queue.Current;
-                cancellationToken = CancellationTokenSource.Token;
-                manualSkip = false;
-                manualIndex = false;
-            }
-
-            if (data.song != null)
+            while (!Exited)
             {
-                _log.Info($"Starting Player for {TextChannel.Name}");
-                CoreMusicHelper buffer = null;
-                //try to get voice 
-                try
+                _bytesSent = 0;
+                cancel = false;
+                CancellationToken cancellationToken;
+                (int Index, MusicInfo song) data;
+                lock (locker)
                 {
-                    buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
-                    //var ac = await
-                    //if (ac == null)
-                    //{
-                    //    VoiceChannel.
-                    //}
+                    data = Queue.Current;
+                    cancellationToken = CancellationTokenSource.Token;
+                    manualSkip = false;
+                    manualIndex = false;
                 }
-                catch
-                {
 
+                if (data.song != null)
+                {
+                    _log.Info($"Starting Player for {TextChannel.Name}");
+                    CoreMusicHelper buffer = null;
+                    //try to get voice 
+                    try
+                    {
+                        buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
+
+                    }
+                    catch
+                    {
+
+                    }
                 }
+
             }
-
         }
+        //private async Task<VoiceNextExtension> GetVoiceNextExtensionAsync(bool reconnect = false)
+        //{
+        //    VoiceChannel.GetConnection(TextChannel.GuildId());
+        //}
 
         public MusicInfo MoveSong(int n1, int n2)
             => Queue.MoveSong(n1, n2);
@@ -190,7 +195,8 @@ namespace Core_Discord.CoreMusic
         {
             throw new NotImplementedException();
         }
-        public void SetVolume(float volume){
+        public void SetVolume(float volume)
+        {
             throw new NotImplementedException();
         }
         public MusicInfo RemoveAt(int index)
@@ -259,7 +265,7 @@ namespace Core_Discord.CoreMusic
                     return;
                 //VoiceChannel = vch;
             }
-           // _audioClient = await vch.ConnectAsync(VoiceChannel);
+            // _audioClient = await vch.ConnectAsync(VoiceChannel);
         }
         //taken from music module.py from
         public async Task UpdateSongDurationsAsync()
@@ -303,3 +309,4 @@ namespace Core_Discord.CoreMusic
         }
     }
 }
+

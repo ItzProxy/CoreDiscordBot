@@ -15,19 +15,12 @@
 
   <ItemGroup>
     <Compile Remove="CoreModule\StoreSim\**" />
-    <Compile Remove="CoreMusic\**" />
-    <Compile Remove="CoreServices\Database\**" />
     <EmbeddedResource Remove="CoreModule\StoreSim\**" />
-    <EmbeddedResource Remove="CoreMusic\**" />
-    <EmbeddedResource Remove="CoreServices\Database\**" />
     <None Remove="CoreModule\StoreSim\**" />
-    <None Remove="CoreMusic\**" />
-    <None Remove="CoreServices\Database\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="CoreMigrations\First.cs" />
-    <Compile Remove="CoreServices\CoreServiceProvider.cs" />
     <Compile Remove="CoreServices\StatsService.cs" />
   </ItemGroup>
 
@@ -41,12 +34,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-beta-00368" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-beta-00368" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-beta-00368" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-beta-00369" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-beta-00369" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-beta-00369" />
     <PackageReference Include="DSharpPlus.ModernEmbedBuilder" Version="1.0.1" />
-    <PackageReference Include="DSharpPlus.Rest" Version="4.0.0-beta-00368" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.0.0-beta-00368" />
+    <PackageReference Include="DSharpPlus.Rest" Version="4.0.0-beta-00369" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.0.0-beta-00369" />
     <PackageReference Include="Google.Apis" Version="1.31.0-beta01" />
     <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.30.0.896" />
     <PackageReference Include="Google.Apis.Urlshortener.v1" Version="1.30.0.138" />
@@ -82,6 +75,8 @@
 	
 <ItemGroup>
   <Folder Include="CoreMigrations\" />
+  <Folder Include="CoreServices\Database\Models\" />
+  <Folder Include="CoreServices\Database\Repository\" />
 </ItemGroup>
 
 </Project>

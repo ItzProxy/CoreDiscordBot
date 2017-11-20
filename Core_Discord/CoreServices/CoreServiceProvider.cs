@@ -6,6 +6,7 @@ using System.Reflection;
 using NLog;
 using System.Linq;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Core_Discord.CoreServices
 {
@@ -74,18 +75,14 @@ namespace Core_Discord.CoreServices
                 return Enumerable.Empty<Type>();
             }
             var services = new Queue<Type>(allTypes
-                    .Where(x => x.GetInterfaces().Contains(typeof(INService))
-                        && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract
-#if GLOBAL_NADEKO
-                        && x.GetTypeInfo().GetCustomAttribute<NoPublicBot>() == null
-#endif
-                            )
+                    .Where(x => x.GetInterfaces().Contains(typeof(CoreService))
+                        && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract)
                     .ToArray());
 
             addedTypes.AddRange(services);
 
             var interfaces = new HashSet<Type>(allTypes
-                    .Where(x => x.GetInterfaces().Contains(typeof(INService))
+                    .Where(x => x.GetInterfaces().Contains(typeof(CoreService))
                         && x.GetTypeInfo().IsInterface));
 
             var alreadyFailed = new Dictionary<Type, int>();
@@ -165,9 +162,5 @@ namespace Core_Discord.CoreServices
 
         public IEnumerator<object> GetEnumerator() => _services.Values.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

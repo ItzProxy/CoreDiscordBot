@@ -24,7 +24,7 @@ namespace Core_Discord.CoreDatabase.Models
         public string ChannelByeMessageText { get; set; } = "%user% has left!";
 
         //music settings/voice settings
-        public float DefaultMusicVolume = 1.0f;
+        public float DefaultMusicVolume { get; set; } = 1.0f;
         public bool AutoDcFromVc { get; set; }
 
         //server time

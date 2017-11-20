@@ -19,7 +19,7 @@ namespace Core_Discord.CoreMusic
         private readonly DbService _db;
         private readonly Logger _log;
         private ICoreCredentials _cred;
-        private readonly ConcurrentDictionary<long, float> _defaultVolume;
+        private readonly ConcurrentDictionary<long, float> _defaultVolumes;
         private readonly object locker = new object();
 
         public ConcurrentBag<long> GuildDc;
@@ -48,7 +48,16 @@ namespace Core_Discord.CoreMusic
             {
                 Directory.CreateDirectory(MusicPath);
             }
-            //_defaultVolume = new Concu
+        }
+        public float GetDefaultVolume(long guildId)
+        {
+            return _defaultVolumes.GetOrAdd(guildId, (id) =>
+            {
+                using (var uow = _db.UnitOfWork)
+                {
+                    return uow.GuildConfig.GetOrCreate(guildId, set => set).DefaultMusicVolume;
+                }
+            });
         }
         //setup based on user 
         //public async Task<CoreMusicPlayer> GetOrCreatePlayer(CommandContext e)
