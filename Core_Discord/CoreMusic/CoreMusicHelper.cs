@@ -26,6 +26,7 @@ namespace Core_Discord.Music
         private readonly bool _isLocal; //check if file is locally found in computer
         private readonly object locker = new object();
 
+        //creates sets and starts new thread with FFMeg with a url
         public CoreMusicHelper(string songUrl, string skipTo, bool isLocal)
         {
             _log = LogManager.GetCurrentClassLogger(); //initilize logger class

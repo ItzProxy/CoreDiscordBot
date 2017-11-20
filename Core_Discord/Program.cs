@@ -15,11 +15,6 @@ namespace Core_Discord
         static public IConfigurationRoot Configuration { get; set; }
         public static void Main(string[] arg)
         {
-            var builder = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json");
-
-            Configuration = builder.Build();
             try
             {
                 MainAsync().Wait();

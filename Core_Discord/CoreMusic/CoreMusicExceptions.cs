@@ -6,9 +6,9 @@ namespace Core_Discord.CoreMusic
 {
     public class CoreMusicExceptions
     {
-        public class NotInVOiceChannelException : Exception
+        public class NotInVoiceChannelException : Exception
         {
-            public NotInVOiceChannelException() : base("You're not in a voice channel on this server.") { }
+            public NotInVoiceChannelException() : base("You're not in a voice channel on this server.") { }
         }
 
         public class QueueFullException : Exception

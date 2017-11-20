@@ -1,19 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 
 namespace Core_Discord
@@ -37,17 +25,6 @@ namespace Core_Discord
             var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
 
             await e.Message.RespondAsync($"{emoji} Hello, {user.Mention}! Welcome to {server}!").ConfigureAwait(false);
-        }
-
-        public async Task HelloWorld(CommandContext e)
-        {
-            await e.TriggerTypingAsync();
-
-            var server = e.Guild.Name;
-            var user = e.Member.Mention;
-            var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
-
-            await e.Message.RespondAsync($"{emoji} Hello, {user}! Welcome to {server}").ConfigureAwait(false);
         }
         /// <summary>
         /// When called gets the ping of the Discord Client to the Discord bot
@@ -83,7 +60,7 @@ namespace Core_Discord
         {
             await e.TriggerTypingAsync();
             var vnext = e.Client.GetVoiceNext();
-            if(vnext == null)
+            if (vnext == null)
             {
                 await e.RespondAsync("VoiceNextService not enabled or configured");
                 return;
@@ -91,7 +68,7 @@ namespace Core_Discord
 
             //
             var voiceConn = vnext.GetConnection(e.Guild);
-            if(voiceConn != null)
+            if (voiceConn != null)
             {
                 await e.RespondAsync("Already connected in this guild");
                 return;
@@ -99,14 +76,15 @@ namespace Core_Discord
 
             //check if user is in a voice channel
             var voiceState = e.Member?.VoiceState;
-            if(voiceState?.Channel == null && chan == null)
+            if (voiceState?.Channel == null && chan == null)
             {
                 await e.RespondAsync("You are not in a voice channel");
                 return;
             }
 
             //if channel not specified
-            if(chan == null) {
+            if (chan == null)
+            {
                 chan = voiceState.Channel;
             }
 

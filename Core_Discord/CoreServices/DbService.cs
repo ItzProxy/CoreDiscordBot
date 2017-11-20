@@ -52,16 +52,7 @@ namespace Core_Discord.CoreServices
 
             //connection to database
             var conn = context.Database.GetDbConnection();
-            //_log.Info(conn.ConnectionString); //debugging purpose
             conn.Open();
-            //not sure if SQL has WAL(write ahead log)
-            //context.Database.ExecuteSqlCommand("PRAGMA journal_mode=WAL");
-           
-            //using(var dbconn = conn.CreateCommand())
-            //{
-            //    dbconn.CommandText = "PRAGMA syncronous=off";
-            //    dbconn.ExecuteNonQuery();
-            //}
             return context;
         }
         public IUnitOfWork UnitOfWork { get =>

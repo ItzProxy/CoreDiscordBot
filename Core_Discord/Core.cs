@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -13,13 +12,9 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.VoiceNext;
 using System.IO;
 using Core_Discord.CoreDatabase.Models;
-using Core_Discord.CoreMusic;
 using Core_Discord.CoreServices;
-using Core_Discord.CoreDatabase;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
-using System.Data.SqlClient;
-using System.Data;
 
 namespace Core_Discord
 {
@@ -31,7 +26,7 @@ namespace Core_Discord
         private readonly BotConfig _config;
         public DiscordClient _discord { get; set; }
         private CoreCommands Commands { get; }
-        private VoiceNextExtension VoiceService { get; }
+        private VoiceNextExtension VoiceService { get; set; }
         private CommandsNextExtension CommandsNextService { get; }
         private InteractivityExtension InteractivityService { get; }
         private Timer TimeGuard { get; set; }
@@ -44,14 +39,13 @@ namespace Core_Discord
             {
                 throw new ArgumentOutOfRangeException(nameof(shardId));
             }
-
+            
             //set up credentials
             LogSetup.LoggerSetup(shardId);
             _config = new BotConfig();
             _log = LogManager.GetCurrentClassLogger();
             Credentials = new CoreCredentials();
             _db = new DbService(Credentials);
-            _log.Info(Credentials.Token);
             var coreConfig = new DiscordConfiguration
             {
                 AutoReconnect = true,
@@ -78,6 +72,7 @@ namespace Core_Discord
             _discord.ClientErrored += this.Discord_ClientErrored;
             _discord.SocketErrored += this.Discord_SocketError;
             _discord.GuildCreated += this.Discord_GuildAvailable;
+            _discord.VoiceStateUpdated += this.Discord_VoiceStateUpdated;
 
             var voiceConfig = new VoiceNextConfiguration
             {
@@ -86,9 +81,10 @@ namespace Core_Discord
             };
 
             //enable voice service
-            this.VoiceService = this._discord.UseVoiceNext(voiceConfig);
+            VoiceService = _discord.UseVoiceNext(voiceConfig);
 
-            var depoBuild = new CoreServiceProvider();
+            var depoBuild = new ServiceCollection();
+            
 
 
             //add dependency here
@@ -97,26 +93,31 @@ namespace Core_Discord
             {
                 _config = uow.BotConfig.GetOrCreate();
             }
+
             //build command configuration
             //see Dsharpplus configuration
             _log.Info($"{_config.DefaultPrefix}");
+
             var commandConfig = new CommandsNextConfiguration
             {
                 StringPrefix = _config.DefaultPrefix,
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 CaseSensitive = true,
-                Services = depoBuild,
+                Services = depoBuild.BuildServiceProvider(),
                 Selfbot = Credentials.UseUserToken,
                 IgnoreExtraArguments = false
             };
 
             //attach command events
             this.CommandsNextService = _discord.UseCommandsNext(commandConfig);
+
             this.CommandsNextService.CommandErrored += this.CommandsNextService_CommandErrored;
+
             this.CommandsNextService.CommandExecuted += this.CommandsNextService_CommandExecuted;
 
-            this.CommandsNextService.RegisterCommands(typeof(Core).GetTypeInfo().Assembly);
+            this.CommandsNextService.RegisterCommands(typeof(CoreCommands).GetTypeInfo().Assembly);
+
             this.CommandsNextService.SetHelpFormatter<CoreBotHelpFormatter>();
 
             //interactive service
@@ -325,6 +326,12 @@ namespace Core_Discord
         {
             _discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Info, "CommandsNext", $"{e.Context.User.Username} executed '{e.Command.QualifiedName}' in {e.Context.Channel.Name}", DateTime.Now);
             return Task.Delay(0);
+        }
+
+        private Task Discord_VoiceStateUpdated(VoiceStateUpdateEventArgs e)
+        {
+            this._discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Debug, "DSP Test", $"Voice state change for {e.User}: {e.Before?.IsServerMuted}->{e.After.IsServerMuted} {e.Before?.IsServerDeafened}->{e.After.IsServerDeafened}", DateTime.Now);
+            return Task.CompletedTask;
         }
 
         /// <summary>

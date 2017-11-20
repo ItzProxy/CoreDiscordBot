@@ -1,19 +1,11 @@
 using System;
-using DSharpPlus;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
-using DSharpPlus.VoiceNext;
-using System.IO;
-using System.Linq;
-using Core_Discord.CoreMusic;
+using System.Reflection;
 
 //figure you how to get input.
 //output data & options in menus.
@@ -62,7 +54,7 @@ namespace Core_Discord.CoreModule.StoreSim
                 intro.AddField("Enter 'q'", "To quit");
                 await _ctx.RespondAsync(embed: intro).ConfigureAwait(false);
                 var mchoice = await interactivity.WaitForMessageAsync(x => (Char.TryParse(x.Content.ToLower(), out var value) && Char.IsLetter(value)) ? true : false, TimeSpan.FromSeconds(60));
-                switch (mchoice.Message.Content.ToCharArray()[0])
+                switch (Convert.ToChar(mchoice.Message.Content))
                 {
                     case 'i':
                         await MenuI();
@@ -97,7 +89,19 @@ namespace Core_Discord.CoreModule.StoreSim
                 };
                 intro.AddField("Budget", $"{budget}", true);
                 intro.AddField("Next Month's Order cost", $"{IList.OrderCost}", false);
-                intro.AddField("Product List", $"{ string.Join(" ", IList.InvList) }", true);
+                if (IList.InvList.Count <= 0)
+                {
+                    intro.AddField("Inventory:", "Empty");
+                }
+                else
+                {
+                    string invString = string.Empty;
+                    foreach (var i in EList.list)
+                    {
+                        invString += i.ToString();
+                    }
+                    intro.AddField("Inventory:", invString);
+                }
                 await _ctx.RespondAsync(embed: intro); //display the intro to inventory menu
 
                 var IMenu = new DiscordEmbedBuilder(intro);
@@ -119,7 +123,8 @@ namespace Core_Discord.CoreModule.StoreSim
                         await IList.AlterOrder(_ctx);
                         break;
                     case 's':
-                        await IList.Sell(,_ctx);
+                        //await IList.Sell(,_ctx);
+                        await _ctx.RespondAsync("Not fixed yet").ConfigureAwait(false);
                         break;
                     case 'q':
                         await _ctx.RespondAsync($"goodbye - Leaving Inventory Menu\n");
@@ -132,7 +137,7 @@ namespace Core_Discord.CoreModule.StoreSim
             }
         }
         public async Task MenuE()
-        {///////////////////////////////////////////////////////////////////////////////////////
+        {
             bool done = false;
             var interactivity = _ctx.Client.GetInteractivity();
             var TimeWait = TimeSpan.FromSeconds(60);
@@ -145,7 +150,20 @@ namespace Core_Discord.CoreModule.StoreSim
                 };
                 intro.AddField("Budget", $"{ budget}", true);
                 intro.AddField("Next Month's Paycheck Cost", $"{EList.EmployeeCost}", true);
-                intro.AddField($"Employee:", String.Join("\n", EList.list.ToArray().ToString()));
+                if (EList.list.Count <= 0)
+                {
+                    intro.AddField("Employee:", "Empty");
+                }
+                else
+                {
+                    string empString = string.Empty;
+                    foreach(var i in EList.list)
+                    {
+                        empString += i.ToString();
+                    }
+                    intro.AddField("Employee:", empString);
+                }
+                
                 //push back each element
                 await _ctx.RespondAsync(embed: intro);
 
@@ -167,12 +185,17 @@ namespace Core_Discord.CoreModule.StoreSim
                     case 'f':
                         await _ctx.Message.RespondAsync($"Enter employee number (all employees with this number will be fired):");
                         var fNum = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.ToLower(), out var value) && value >= 0), TimeWait);
-                        await EList.Fire(fNum, _ctx);
+                        int searchFNum = 0;
+                        if (int.TryParse(fNum.Message.Content, out var eh)) { searchFNum = eh; }
+                        await EList.Fire(searchFNum, _ctx);
                         break;
                     case 'c':
                         await _ctx.Message.RespondAsync($"Enter employee number (You will go over all employees with this number):");
                         var cNum = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.ToLower(), out var value) && value >= 0), TimeWait);
-                        await EList.Change(cNum, _ctx);
+                        int searchCNum = 0;
+                        if (int.TryParse(cNum.Message.Content, out var ehs)) { searchCNum = ehs; }
+                        await EList.Change(searchCNum, _ctx);
+                        await _ctx.RespondAsync("Not fixed yet").ConfigureAwait(false);
                         break;
                     case 'q':
                         await _ctx.Message.RespondAsync($"goodbye- Leaving Employee Menu\n");
@@ -209,18 +232,20 @@ namespace Core_Discord.CoreModule.StoreSim
                     Color = DiscordColor.Blue
                 };
                 AMenu.ClearFields();
-                AMenu.AddField("Enter r to roll over month", "", true);
-                AMenu.AddField("Enter c to alter budget by adding or removing money", "", true);
-                AMenu.AddField("Enter q to quit", "", true);
+                AMenu.AddField("Enter 'r'", "To roll over month", true);
+                AMenu.AddField("Enter 'c'", "To alter budget by adding or removing money", true);
+                AMenu.AddField("Enter 'q'", "To quit Account Menu", true);
                 await _ctx.RespondAsync(embed: AMenu);
                 var mchoice = await interactivity.WaitForMessageAsync(x => (char.TryParse(x.Content.ToLower(), out var value) && Char.IsLetter(value)), TimeSpan.FromSeconds(60));
                 switch (Convert.ToChar(mchoice.Message.Content))
                 {
                     case 'r':
-                        Account.NextMonth(_ctx);
+                        await Account.NextMonth(_ctx,budget,EList.EmployeeCost,IList.OrderCost);
+                        await _ctx.RespondAsync("Not fixed yet").ConfigureAwait(false);
                         break;
                     case 'c':
-                        Account.ChangeBudget();
+                        budget = await Account.ChangeBudget(_ctx, budget);
+                        await _ctx.RespondAsync("Not fixed yet").ConfigureAwait(false);
                         break;
                     case 'q':
                         await _ctx.Message.RespondAsync($"goodbye - Leaving Account Menu\n");
@@ -233,7 +258,7 @@ namespace Core_Discord.CoreModule.StoreSim
             }
         }
     }
-
+        
     public class EmployeeList
     {
         public float EmployeeCost { get; set; }
@@ -242,107 +267,100 @@ namespace Core_Discord.CoreModule.StoreSim
         public async Task AddEmployee(CommandContext e)
         {
             TimeSpan TimeWait = TimeSpan.FromSeconds(60);
-            Employee newEm;
-            float UInput1;
-            int UInput2;
-            string UInput3;
+            Employee newEm = new Employee();
+
             var interactivity = e.Client.GetInteractivity();
             //set values   
             await e.RespondAsync($"Enter new employee's name:");
-            UInput3 = await interactivity.WaitForMessageAsync((x => x.Content.Any(), TimeWait),
-            newEm.name = UInput3;
-            await e.Message.RespondAsync($"enter new emloyee's emloyee number\n", UInput2, int);
-            await e.Message.RespondAsync($"(note: if 2 employee's have the same number both will have their shift changed in the same command, and both will be fired at once):", UInput2, int);
-            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-            newEm.EmNum = UInput2;
-            await e.Message.RespondAsync($"enter new emloyee's pay rate:", UInput2, int);
-            UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
-            newEm.rate = UInput1;
-            await e.Message.RespondAsync($"enter hour mark newemployee's shift start time:", UInput2, int);
-            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-            newEm.StartH = UInput2;
-            await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
-            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-            list.head.StartM = UInput2;
-            await e.Message.RespondAsync($"enter hour mark newemployee's shift end time:", UInput2, int);
-            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-            list.head.EndH = UInput2;
-            await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
-            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-            list.head.EndM = UInput2;
-            list.push(newEm);
-            EmployeeCost = Numbers.CalcEmployeeRate(list);
+            var UInput3 = await interactivity.WaitForMessageAsync((x => x.Content == x.Content), TimeWait);
+            newEm.Name = UInput3.Message.Content;
+            await e.RespondAsync($"Enter {newEm.Name}'s employee number\n" +
+                $"(note: if 2 employee's have the same number both will have their shift changed in the same command, and both will be fired at once):");
+            var UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+            if (int.TryParse(UInput2.Message.Content, out var vEmnum)) { newEm.EmNum = vEmnum; };
+            await e.Message.RespondAsync($"Enter {newEm.Name}'s pay rate:");
+            var UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content, out var value) && value >= 0.0f));
+            if (int.TryParse(UInput2.Message.Content, out var rate)) { newEm.Rate = rate; }
+            await e.Message.RespondAsync($"Enter hour mark {newEm.Name}'s shift start time:");
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+            if (int.TryParse(UInput2.Message.Content, out var sh)) { newEm.StartH = sh; }
+            await e.Message.RespondAsync($"Now the minute mark:");
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+            if (int.TryParse(UInput2.Message.Content, out var min)) { newEm.StartM = min; }
+            await e.Message.RespondAsync($"Enter hour mark {newEm.Name}'s shift end time:");
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+            if (int.TryParse(UInput2.Message.Content, out var eh)) { newEm.EndH = eh; }
+            await e.Message.RespondAsync($"Now the minute mark:");
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+            if (int.TryParse(UInput2.Message.Content, out var emin)) { newEm.EndM = emin; }
+            var intro = new DiscordEmbedBuilder() {
+                Description = "New Employee Card",
+                Color = DiscordColor.DarkRed
+            };
+            //foreach(FieldInfo field in newEm.GetType().GetFields())
+            //{
+            //    newEm.
+            //}
+            intro.AddField("Name", newEm.Name);
+            intro.AddField("Employee Number", newEm.EmNum.ToString());
+            intro.AddField("Pay Rate", newEm.Rate.ToString());
+            intro.AddField("Start Time", $"{newEm.StartH}:{newEm.StartM}");
+            list.Add(newEm);
+            EmployeeCost = new Calculator().CalcEmployeeRate(list);
         }
-        public int Fire(int search)
+        public async Task Fire(int search, CommandContext e)
         {
-        list.Remove(
-        while (!list.empty())
-            {
-                if (list.head.EmNum != search)
-                {
-                    storage.push(list.head);
-                }
-                list.pop();
-            }
-            //push back each element
-            while (!storage.empty())
-            {
-                list.push(storage.head);
-                storage.pop();
-            }
-            EmployeeCost = Numbers.CalcEmployeeRate(list);
+            list.Remove(list.Find(x => x.EmNum == search));
+            EmployeeCost = new Calculator().CalcEmployeeRate(list);
+            await Task.CompletedTask;
         }
-        public async Task Change(int search, CommandContext e, Employee)
+        public async Task Change(int search, CommandContext e)
         {
-            Stack<Employee> storage;
-            float UInput1;
-            int UInput2;
+            TimeSpan TimeWait = TimeSpan.FromSeconds(60);
             var interactivity = e.Client.GetInteractivity();
-
-            while (!list.empty())
-            {//I could do this more efficiently, but this is just a game, and shuldn't have too many user generated elements.
-                if (list.head.EmNum == search)
-                {
-                    await e.Message.RespondAsync($"User found.\n", UInput2, int);
-                    await e.Message.RespondAsync("name: {0}\n");
-                    await e.Message.RespondAsync("Current Pay Rate: {0}\n", rate);
-                    cout << "enter new pay rate:";
-                    await e.Message.RespondAsync("enter new pay rate\n", StartH, StartM);
-                    UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
-                    list.head.rate = UInput1;
-                    await e.Message.RespondAsync("Current Shift start time {0} : {1}\n", StartH, StartM);
-                    await e.Message.RespondAsync($"enter start time, at the hour mark:", UInput2, int);
-                    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                    list.head.StartH = UInput2;
-                    await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
-                    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                    list.head.StartM = UInput2;
-                    await e.Message.RespondAsync("Current Shift end time {0} : {1}\n", EndH, EndM);
-                    await e.Message.RespondAsync($"enter new end time, at the hour mark:", UInput2, int);
-                    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                    list.head.EndH = UInput2;
-                    await e.Message.RespondAsync($"Now the minute mark:", UInput2, int);
-                    UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                    list.head.EndM = UInput2;
-                }
-                storage.push(list.head);
-                list.pop();
-            }
-            //push back each element
-            while (!storage.empty())
+            var foundEmployee = list.Find(x => x.EmNum == search);
+            if (foundEmployee != null)
             {
-                list.push(storage.head);
-                storgate.pop();
+                var temp = foundEmployee;
+                //remove employee then add them back!? I think is the way to go because I don't know if Find is pass by referencea and if it is, probably not a good idea to change it
+                await e.RespondAsync($"User found.\n");
+                await e.RespondAsync($"Name: {foundEmployee.Name}\n");
+                await e.RespondAsync($"Current Pay Rate: {foundEmployee.Rate}\n");
+                await e.RespondAsync("Enter new pay rate\n");
+                var UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content, out var value)) && value >= 0.0f, TimeWait);
+                if (float.TryParse(UInput1.Message.Content, out var rate)) { foundEmployee.Rate = rate; }
+                await e.RespondAsync($"Current shift start time - {foundEmployee.StartH} : {foundEmployee.StartM}");
+                await e.Message.RespondAsync($"Enter hour mark {foundEmployee.Name}'s shift start time:");
+                var UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+                if (int.TryParse(UInput2.Message.Content, out var sh)) { foundEmployee.StartH = sh; }
+                await e.Message.RespondAsync($"Now the minute mark:");
+                UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+                if (int.TryParse(UInput2.Message.Content, out var min)) { foundEmployee.StartM = min; }
+                await e.Message.RespondAsync($"Current shift end time - {foundEmployee.EndH} : {foundEmployee.EndM}");
+                await e.Message.RespondAsync($"Enter hour mark {foundEmployee.Name}'s shift end time:");
+                UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+                if (int.TryParse(UInput2.Message.Content, out var eh)) { foundEmployee.EndH = eh; }
+                await e.Message.RespondAsync($"Now the minute mark:");
+                UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value) && value >= 0), TimeWait);
+                if (int.TryParse(UInput2.Message.Content, out var emin)) { foundEmployee.EndM = emin; }
+                //remove
+                list.Remove(temp); //remove the old (just incase user fails to complete the change menu then it doesn't remove the object fromlist for ever)
+                list.Add(foundEmployee); //add the modified
             }
-            EmployeeCost = Numbers.CalcEmployeeRate(list);
+            else
+            {
+                await e.RespondAsync("Employee not found");
+            }
+            EmployeeCost = new Calculator().CalcEmployeeRate(list);
+            await Task.CompletedTask;
         }
     }
 
     public sealed class Employee
     {
-        public string name { get; set; }
+        public string Name { get; set; }
         public int EmNum { get; set; }
-        public float rate { get; set; }
+        public float Rate { get; set; }
         public int StartH { get; set; }
         public int StartM { get; set; }
         public int EndH { get; set; }
@@ -350,7 +368,7 @@ namespace Core_Discord.CoreModule.StoreSim
 
         public override string ToString()
         {
-            return $"{name} #{EmNum} paid {rate} {StartH} : {StartH} - {EndH}:{EndM}\n";
+            return $"{Name} #{EmNum} paid {Rate} {StartH} : {StartH} - {EndH}:{EndM}\n";
         }
 
         public float CalcPay()
@@ -364,122 +382,138 @@ namespace Core_Discord.CoreModule.StoreSim
             {
                 hours = 24 - hours;
             }
-            return hours * rate;
+            return hours * Rate;
         }
     }
 
     public class InventoryList
     {
+        TimeSpan TimeWait = TimeSpan.FromSeconds(60);
         public float OrderCost { get; set; }
         public List<Product> InvList { get; set; } = new List<Product>();
-
+        string genericImageUrl = "https://cdn.discordapp.com/attachments/373945959853457422/382221584498294796/PZbDAYdpMy2pbDzUgjoLpfG6AAAAAAElFTkSuQmCC.png";
 
         public async Task AddProduct(CommandContext e)
         {
             TimeSpan TimeWait = TimeSpan.FromSeconds(60);
-            Product newP;
-            float UInput1;
-            int UInput2;
-            string UInput3;
+            Product newP = new Product();
             var interactivity = e.Client.GetInteractivity();
-            await e.Message.RespondAsync($"enter new product's name:");
-            UInput3 = await interactivity.WaitForMessageAsync(x => x.Content.Any());///////////////*   
-            newP.name = UInput3;
-            await e.Message.RespondAsync($"enter new products's order price:");
-            UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
-            newP.BuyPrice = UInput1;
-            await e.Message.RespondAsync($"enter new products's selling price:", UInput2, int);
-            UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
-            newP.SellPrice = UInput1;
-            await e.Message.RespondAsync($"how many units of this product do you have in stock?:", UInput2, int);
-            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-            newP.stock = UInput2;
-            await e.Message.RespondAsync($"set units per month order:", UInput2, int);
-            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-            newP.order = UInput2;
-            list.push(newP);
-            OrderCost = Numbers.CalcOrderCost(list);
+            await e.Message.RespondAsync($"Enter new product's name:");
+            var UInput3 = await interactivity.WaitForMessageAsync(x => x.Content.Trim().Length > 0,TimeWait);///////////////*   
+            newP.Name = UInput3.Message.Content;
+            await e.Message.RespondAsync($"Enter new products's order price:");
+            var UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content, out var value)) && value >= 0.0f, TimeWait); //evaluate that the message is a float and >= 0
+            if (float.TryParse(UInput1.Message.Content, out var buy)) { newP.BuyPrice = buy; }
+            await e.Message.RespondAsync($"Enter new products's selling price:");
+            UInput1 = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content, out var value)) && value >= 0.0f, TimeWait);
+            if (float.TryParse(UInput1.Message.Content, out var sell)) { newP.SellPrice = sell; }
+            await e.RespondAsync($"How many units of {newP.Name} do you have in stock?:");
+            var UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value)) && value >= 0, TimeWait);
+            if (int.TryParse(UInput2.Message.Content, out var stock)) { newP.Stock = stock; }
+            await e.Message.RespondAsync($"Set units per month order:");
+            UInput2 = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content, out var value)) && value >= 0, TimeWait);
+            if (int.TryParse(UInput2.Message.Content, out var order)) { newP.Order = order; }
+            var intro = new DiscordEmbedBuilder()
+            {
+                Title = "Product",
+                Description = "Adding product"
+            };
+            intro.ImageUrl = genericImageUrl;
+            intro.AddField("Name", newP.Name);
+            intro.AddField("Buy Price", newP.BuyPrice.ToString());
+            intro.AddField("Sell Price", newP.SellPrice.ToString());
+            intro.AddField("Units in stock", newP.Stock.ToString());
+            intro.AddField("Order number", newP.Order.ToString());
+            await e.RespondAsync(embed: intro);
+            InvList.Add(newP);
+            OrderCost = new Calculator().CalcOrderCost(InvList);
         }
         public async Task AlterOrder(CommandContext e)
         {
-            while (!InvList.)
-            {
-                await e.Message.RespondAsync($"New Order value for {name}:");
-                int input;
-                var interactivity = e.Client.GetInteractivity();
-                input = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                list.head.order = input;
-                storage.push(list.head);
-                list.pop();
-            }
-            //push back each element
-            OrderCost = new Calculator().CalcOrderCost(InvList);
+            //var interactivity = e.Client.GetInteractivity();
+
+            //foreach (!InvList.)
+            //{
+            //    await e.Message.RespondAsync($"New Order Value for {name}:");
+            //    int input;
+
+            //    input = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+            //    list.head.order = input;
+            //    storage.push(list.head);
+            //    list.pop();
+            //}
+            ////push back each element
+            //OrderCost = new Calculator().CalcOrderCost(InvList);
+            await e.RespondAsync("Not Implemented yet").ConfigureAwait(false);
         }
-        public async Task Sell(string search)
+        public async Task Sell(string search, CommandContext e)
         {
-            _
-            List<Product> storage;
-            while (!list.empty())
-            {
-                await e.Message.RespondAsync("How Many {0} were sold?", name);
-                int input;
-                var interactivity = e.Client.GetInteractivity();
-                input = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
-                if ((list.head.Stock - input) < 0)
-                {
-                    input = list.head.Stock;
-                }
-                list.head.Stock = list.head.Stock - input;
-                budget = budget + list.head.SellPrice * input;
-                storage.push(list.head);
-                list.pop();
-            }
-            //push back each element
-            while (!storage.empty())
-            {
-                list.push(storage.head);
-                storgate.pop();
-            }
+
+            //while (!list.empty())
+            //{
+            //    await e.Message.RespondAsync("How Many {0} were sold?", name);
+            //    int input;
+            //    var interactivity = e.Client.GetInteractivity();
+            //    input = await interactivity.WaitForMessageAsync(x => (int.TryParse(x.Content.toString(), out var value)) ? true : false);
+            //    if ((list.head.Stock - input) < 0)
+            //    {
+            //        input = list.head.Stock;
+            //    }
+            //    list.head.Stock = list.head.Stock - input;
+            //    budget = budget + list.head.SellPrice * input;
+            //    storage.push(list.head);
+            //    list.pop();
+            //}
+            ////push back each element
+            //while (!storage.empty())
+            //{
+            //    list.push(storage.head);
+            //    storgate.pop();
+            //}
+            await e.RespondAsync("Not Implemented yet").ConfigureAwait(false);
         }
     }
 
 
     public sealed class Product
     {
-        public string name { get; set; }
+        public string Name { get; set; }
         public float SellPrice { get; set; }
         public float BuyPrice { get; set; }
         public int Stock { get; set; }
-        public int order { get; set; }
+        public int Order { get; set; }
 
         public override string ToString()
         {
-            return $"{name} Sell:${SellPrice} buy:${BuyPrice} Stock:{BuyPrice} Next Month's Order {Stock}";
+            return $"{Name} Sell:${SellPrice} buy:${BuyPrice} Stock:{BuyPrice} Next Month's Order {Stock}";
         }
     }
 
     public class Accounting
     {
-        public float NextMonth(CommandContext e)
+        public async Task<float> NextMonth(CommandContext e, float budget, float EmployeeCost, float OrderCost)
         {
-
-            if (budget - Numbers.CalcMonthlyCost() < 0.0)
+            Calculator Numbers = new Calculator();
+            if (budget - Numbers.CalcMonthlyCost(EmployeeCost, OrderCost) < 0.0)
             {
-                budget = budget - Numbers.CalcMonthlyCost();
-                await e.Message.RespondAsync($"month rolled over\n", budget, int);
+                budget = budget - Numbers.CalcMonthlyCost(EmployeeCost, OrderCost);
+                await e.Message.RespondAsync($"month rolled over\n");
             }
             else
             {
-                await e.Message.RespondAsync($"cannot roll over month unless products are sold\n", budget, int);
+                await e.Message.RespondAsync($"cannot roll over month unless products are sold\n");
             }
+            return budget;
         }
-        public float ChangeBudget()
+        public async Task<float> ChangeBudget(CommandContext e, float budget)
         {
-            float change;
             var interactivity = e.Client.GetInteractivity();
-            await e.Message.RespondAsync($"enter value to add to budget (to take away from budget, enter a negative value):", budget, int);
-            change = await interactivity.WaitForMessageAsync(x => (float.TryParse(x.Content.toString(), out var value)) ? true : false);
+            await e.Message.RespondAsync($"enter value to add to budget (to take away from budget, enter a negative value):");
+            var inter = await interactivity.WaitForMessageAsync(x => float.TryParse(x.Content, out var value) && value >= 0,TimeSpan.FromSeconds(60));
+            float change = 0;
+            if (int.TryParse(inter.Message.Content, out var ch)) { change = ch; }
             budget = budget + change;
+            return budget;
         }
     }
 
@@ -490,9 +524,11 @@ namespace Core_Discord.CoreModule.StoreSim
             //pop each element
             float total = 0;
             int hours;
+            int minutes;
             foreach (var i in list)
             {
-                total += list.CalcPay();
+                //total += ((i.EndH - i.StartH) + (i.End)
+
             }
             //push back each element
 
@@ -502,22 +538,13 @@ namespace Core_Discord.CoreModule.StoreSim
         {
             //pop each element
             float total = 0;
-            Stack<Product> storage;
-            while (!list.empty())
+            foreach(var i in list)
             {
-                total += list.head.BuyPrice;
-                storage.push(list.head);
-                list.pop();
-            }
-            //push back each element
-            while (!storage.empty())
-            {
-                list.push(storage.head);
-                storgate.pop();
+                total += i.BuyPrice;
             }
             return total;
         }
-        public float CalcMonthlyCost() //
+        public float CalcMonthlyCost(float EmployeeCost, float OrderCost) //
         {
             return EmployeeCost + OrderCost;
         }
