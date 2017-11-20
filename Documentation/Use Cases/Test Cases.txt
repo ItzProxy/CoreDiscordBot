@@ -25,6 +25,10 @@ Able to create database
 	-Creates all tables required
 	-If requirements are not met, error will happen saying connection not available and series of exceptions
 
+MusicModule
+	-Requirements:
+		Able 
+
 Web GUI
 	-Able to authenticate using Discord OAuth2 protocol
 		-Requires a valid discord account

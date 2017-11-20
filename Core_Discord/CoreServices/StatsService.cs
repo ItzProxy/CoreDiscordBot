@@ -36,6 +36,8 @@ namespace Core_Discord.CoreServices
         private long _commandsRan;
         public long CommandsRan => Interlocked.Read(ref _commandsRan);
 
+        public double MessagePerSecond => throw new NotImplementedException();
+
         private readonly Timer _carbonitexTimer;
         private readonly Timer _dataTimer;
         private readonly ConnectionMultiplexer _redis;
@@ -115,7 +117,7 @@ namespace Core_Discord.CoreServices
                 return Task.CompletedTask;
             };
 
-            _client.LeftGuild += (g) =>
+            _client.GuildDeleted += (g) =>
             {
                 var _ = Task.Run(() =>
                 {
@@ -201,7 +203,7 @@ namespace Core_Discord.CoreServices
 
         public Task<string> Print()
         {
-            SocketSelfUser curUser;
+            DiscordUser curUser;
             while ((curUser = _client.CurrentUser) == null) Task.Delay(1000).ConfigureAwait(false);
 
             return Task.FromResult($@"

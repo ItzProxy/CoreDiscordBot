@@ -12,6 +12,7 @@ using NLog;
 using Core_Discord.CoreServices.Interfaces;
 using Core_Discord.Music;
 using Core_Discord.CoreDatabase.Models;
+using System.Diagnostics;
 
 /// <summary>
 /// Built using an Outdated Music Player for Discord
@@ -32,7 +33,7 @@ namespace Core_Discord.CoreMusic
         private Logger _log;
         private readonly object locker = new object(); //semaphore
         private readonly Thread _player;
-        public VoiceNextConnection VoiceChannel { get; private set; }
+        public VoiceNextExtension VoiceChannel { get; private set; }
         public CancellationTokenSource CancellationTokenSource { get; private set; }
         public DiscordChannel TextChannel { get; set; }
         private readonly IGoogleApiService _google;
@@ -107,7 +108,7 @@ namespace Core_Discord.CoreMusic
             }
         }
 
-        public CoreMusicPlayer(VoiceNextConnection voice, DiscordChannel textChan, IGoogleApiService googleApiService, float volume, CoreMusicService musicService)
+        public CoreMusicPlayer(VoiceNextExtension voice, DiscordChannel textChan, IGoogleApiService googleApiService, float volume, CoreMusicService musicService)
         {
             _log = LogManager.GetCurrentClassLogger();
             Volume = volume;
@@ -134,17 +135,17 @@ namespace Core_Discord.CoreMusic
 
             if (data.song != null)
             {
-                _log.Info($"Starting Player for {TextChannel.}");
+                _log.Info($"Starting Player for {TextChannel.Name}");
                 CoreMusicHelper buffer = null;
                 //try to get voice 
                 try
                 {
                     buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
-                    var ac = await
-                    if (ac == null)
-                    {
-                        VoiceChannel.
-                    }
+                    //var ac = await
+                    //if (ac == null)
+                    //{
+                    //    VoiceChannel.
+                    //}
                 }
                 catch
                 {
@@ -212,7 +213,7 @@ namespace Core_Discord.CoreMusic
             lock (locker)
                 return Queue.ToArray();
         }
-        //taken from aidiakapi
+        ////taken from aidiakapi
         public static unsafe byte[] AdjustVolume(byte[] audioSamples, float volume)
         {
             if (Math.Abs(volume - 1f) < 0.0001f) return audioSamples;
@@ -256,9 +257,9 @@ namespace Core_Discord.CoreMusic
             {
                 if (Exited)
                     return;
-                VoiceChannel = vch;
+                //VoiceChannel = vch;
             }
-            _audioClient = await vch.ConnectAsync(VoiceChannel);
+           // _audioClient = await vch.ConnectAsync(VoiceChannel);
         }
         //taken from music module.py from
         public async Task UpdateSongDurationsAsync()
@@ -297,7 +298,7 @@ namespace Core_Discord.CoreMusic
                 OnPauseChanged = null;
                 OnStarted = null;
             }
-            VoiceChannel.Disconnect(); //disconnect
+            await VoiceChannel.Client.DisconnectAsync(); //disconnect
             await Task.CompletedTask;
         }
     }

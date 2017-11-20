@@ -4,7 +4,8 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
-using DSharpPlus.VoiceNext;
+using DSharpPlus.
+    Next;
 using System;
 
 namespace Core_Discord.CoreMusic
@@ -16,11 +17,10 @@ namespace Core_Discord.CoreMusic
         private string requiredRoles;
 
         [Command("play")]
-
         [Description("plays music of the given url")]
-        public async Task Play(CommandContext e, )
+        public async Task Play(CommandContext e)
         {
-            var mp = await _musicService.
+            //var mp = await _musicService.GetOrCreatePlayer(e);
             await e.RespondAsync($"Not yet implemented yet").ConfigureAwait(false);
         }
     }

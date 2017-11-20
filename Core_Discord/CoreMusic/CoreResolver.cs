@@ -19,13 +19,8 @@ namespace Core_Discord.CoreMusic
                 case MusicType.Local:
                     return new LocalResolve();
                 default:
-                    if (_sc.IsSoundCloudLink(query))
-                        return new SoundcloudResolveStrategy(_sc);
-                    else if (RadioResolveStrategy.IsRadioLink(query))
-                        return new RadioResolveStrategy();
                     // maybe add a check for local files in the future
-                    else
-                        return new YoutubeResolveStrategy();
+                        return new YoutubeResolve();
             }
         }
     }

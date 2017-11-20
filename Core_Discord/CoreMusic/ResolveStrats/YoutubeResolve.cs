@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using NLog;
 using Core_Discord.CoreServices;
 using Core_Discord.CoreDatabase.Models;
+using System.Globalization;
 
 namespace Core_Discord.CoreMusic.ResolveStrats
 {

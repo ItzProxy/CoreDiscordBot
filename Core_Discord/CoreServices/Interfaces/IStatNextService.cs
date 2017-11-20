@@ -12,7 +12,8 @@ namespace Core_Discord.CoreServices
         long MessageCounter { get; }
         double MessagePerSecond { get; }
         long TextChannels { get; }
-        long VoiceChannels { get; }
+        long 
+            Channels { get; }
 
         TimeSpan GetUptime();
         string GetUptimeString(string seperator = ", ");

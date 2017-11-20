@@ -5,20 +5,30 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <ApplicationIcon />
     <OutputTypeEx>exe</OutputTypeEx>
-    <StartupObject />
+    <StartupObject>Core_Discord.Program</StartupObject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="CoreModule\StoreSim\**" />
+    <Compile Remove="CoreMusic\**" />
     <Compile Remove="CoreServices\Database\**" />
     <EmbeddedResource Remove="CoreModule\StoreSim\**" />
+    <EmbeddedResource Remove="CoreMusic\**" />
     <EmbeddedResource Remove="CoreServices\Database\**" />
     <None Remove="CoreModule\StoreSim\**" />
+    <None Remove="CoreMusic\**" />
     <None Remove="CoreServices\Database\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="CoreMigrations\First.cs" />
+    <Compile Remove="CoreServices\CoreServiceProvider.cs" />
+    <Compile Remove="CoreServices\StatsService.cs" />
   </ItemGroup>
 
   <ItemGroup>

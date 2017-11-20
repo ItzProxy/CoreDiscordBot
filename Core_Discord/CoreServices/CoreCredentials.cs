@@ -132,7 +132,7 @@ namespace Core_Discord.CoreServices
                             string.IsNullOrWhiteSpace(dbSection["ConnectionString"])
                                 ? "Data Source=data/CoreDB.db"
                                 : dbSection["ConnectionString"]);
-                _log.Info(Db.ConnectionString);
+                //_log.Info(Db.ConnectionString);
             }
             catch (Exception e)
             {
