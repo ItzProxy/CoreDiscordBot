@@ -116,20 +116,35 @@ namespace Core_Discord.CoreMusic
             }
         }
         /// <summary>
-        /// Removes song at the given index
+        /// 
         /// </summary>
-        /// <param name="index"></param>
-        public void RemoveAt(int index)
+        /// <param name="index">value in between</param>
+        /// <returns>Song at the front of the queue</returns>
+        public MusicInfo RemoveAt(int index)
         {
             lock (locker)
             {
-                if(index < 0 || index >= Songs.Count)
-                {
+                if (index < 0 || index >= Songs.Count)
                     throw new ArgumentOutOfRangeException(nameof(index));
-                }
 
-                var currentSong = Songs.ElementAt(index);
-                Songs.Remove(currentSong);
+                var current = Songs.First.Value;
+                for (int i = 0; i < Songs.Count; i++)
+                {
+                    if (i == index)
+                    {
+                        current = Songs.ElementAt(index);
+                        Songs.Remove(current);
+                        if (CurrIndex != 0)
+                        {
+                            if (CurrIndex >= index)
+                            {
+                                --CurrIndex;
+                            }
+                        }
+                        break;
+                    }
+                }
+                return current;
             }
         }
         /// <summary>

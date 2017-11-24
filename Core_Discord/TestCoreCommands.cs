@@ -6,6 +6,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
 using System.Threading.Tasks;
 using System.Globalization;
+using DSharpPlus.Entities;
 
 namespace Core_Discord
 {
@@ -62,6 +63,37 @@ namespace Core_Discord
             }
             await e.RespondAsync($"The result is: {result}");
             await Task.CompletedTask;
+        }
+        [Group("bind"), Description("Various argument binder testing commands.")]
+        public class Binding
+        {
+            [Command("user"), Description("Attempts to get a user.")]
+            public Task UserAsync(CommandContext ctx, DiscordUser usr)
+                => ctx.RespondAsync(embed: new DiscordEmbedBuilder().WithDescription(usr.Mention));
+
+            [Command("member"), Description("Attempts to get a member.")]
+            public Task MemberAsync(CommandContext ctx, DiscordMember mbr)
+                => ctx.RespondAsync(embed: new DiscordEmbedBuilder().WithDescription(mbr.Mention));
+
+            [Command("role"), Description("Attempts to get a role.")]
+            public Task RoleAsync(CommandContext ctx, DiscordRole rol)
+                => ctx.RespondAsync(embed: new DiscordEmbedBuilder().WithDescription(rol.Mention));
+
+            [Command("channel"), Description("Attempts to get a channel.")]
+            public Task ChannelAsync(CommandContext ctx, DiscordChannel chn)
+                => ctx.RespondAsync(embed: new DiscordEmbedBuilder().WithDescription(chn.Mention));
+
+            [Command("guild"), Description("Attempts to get a guild.")]
+            public Task GuildAsync(CommandContext ctx, DiscordGuild gld)
+                => ctx.RespondAsync(embed: new DiscordEmbedBuilder().WithDescription(gld.Name));
+
+            [Command("emote"), Description("Attempts to get an emoji.")]
+            public Task EmoteAsync(CommandContext ctx, DiscordEmoji emt)
+                => ctx.RespondAsync(embed: new DiscordEmbedBuilder().WithDescription(emt.ToString()));
+
+            [Command("string"), Description("Attempts to bind a string.")]
+            public Task StringAsync(CommandContext ctx, string s)
+                => ctx.RespondAsync(s);
         }
     }
 }

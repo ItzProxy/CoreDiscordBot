@@ -16,7 +16,7 @@ namespace Core_Discord.Music
     {
         const int size = 65536; // 2^16
         private Process pro;
-        private Stream outbuf;
+        public Stream outbuf;
 
         private SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
         private readonly Logger _log;

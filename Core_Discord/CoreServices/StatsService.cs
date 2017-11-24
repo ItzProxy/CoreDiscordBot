@@ -38,6 +38,8 @@ namespace Core_Discord.CoreServices
 
         public double MessagePerSecond => throw new NotImplementedException();
 
+        public long Channels => throw new NotImplementedException();
+
         private readonly Timer _carbonitexTimer;
         private readonly Timer _dataTimer;
         private readonly ConnectionMultiplexer _redis;

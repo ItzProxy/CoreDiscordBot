@@ -15,6 +15,11 @@ using Core_Discord.CoreDatabase.Models;
 using Core_Discord.CoreServices;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using System.Diagnostics;
+using Core_Discord.CoreMusic;
+using Core_Discord.CoreServices.Interfaces;
+using System.Linq;
+using Core_Discord.CoreDatabase;
 
 namespace Core_Discord
 {
@@ -22,7 +27,8 @@ namespace Core_Discord
     {
         private Logger _log;
 
-        public CoreCredentials Credentials { get; set; }
+        public CoreServiceProvider Services { get; private set; }
+        public CoreCredentials Credentials { get; }
         private readonly BotConfig _config;
         public DiscordClient _discord { get; set; }
         private CoreCommands Commands { get; }
@@ -79,13 +85,19 @@ namespace Core_Discord
                 VoiceApplication = DSharpPlus.VoiceNext.Codec.VoiceApplication.Music,
                 EnableIncoming = false
             };
-
+            _discord.UseVoiceNext(voiceConfig);
+            var googleService = new GoogleApiService(Credentials);
             //enable voice service
-            VoiceService = _discord.UseVoiceNext(voiceConfig);
 
+            IGoogleApiService googleApiService = new GoogleApiService(Credentials);
+            CoreMusicService cms = new CoreMusicService(_discord, _db, Credentials, this,googleApiService);
             var depoBuild = new ServiceCollection();
-            
-
+            //taken from NadeoBot's Service loading
+            depoBuild.AddSingleton<DiscordClient>(_discord);
+            depoBuild.AddSingleton<CoreCredentials>(Credentials);
+            depoBuild.AddSingleton<IGoogleApiService>(googleApiService);
+            depoBuild.AddSingleton(_db);
+            depoBuild.AddSingleton(cms);
 
             //add dependency here
 
@@ -138,7 +150,69 @@ namespace Core_Discord
             //this.CommandsNextService.RegisterCommands(typeof(CoreInteractivityModuleCommands).GetTypeInfo().Assembly); 
 
         }
+        #region StartBot
+        /*
+        private void SetupShard(int parentProcessId)
+        {
+            new Thread(new ThreadStart(() =>
+            {
+                try
+                {
+                    var p = Process.GetProcessById(parentProcessId);
+                    if (p == null)
+                        return;
+                    p.WaitForExit();
+                }
+                finally
+                {
+                    Environment.Exit(10);
+                }
+            })).Start();
+        }
+        public async Task RunAndBlockAsync(params string[] args)
+        {
+            await RunAsync(args).ConfigureAwait(false);
+            await Task.Delay(-1).ConfigureAwait(false);
+        }
+        public async Task RunAsync(params string[] args)
+        {
+            var sw = Stopwatch.StartNew();
 
+            await _discord.ConnectAsync();
+
+            _log.Info($"Shard {_discord.ShardId} loading services...");
+            try
+            {
+                AddServices();
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex);
+                throw;
+            }
+
+            sw.Stop();
+            _log.Info($"Shard {_discord.ShardId} connected in {sw.Elapsed.TotalSeconds:F2}s");
+
+            var stats = Services.GetService<IStatsService>();
+            stats.Initialize();
+            var commandHandler = Services.GetService<CommandHandler>();
+            var CommandService = Services.GetService<CommandService>();
+
+            // start handling messages received in commandhandler
+            await commandHandler.StartHandling().ConfigureAwait(false);
+
+            var _ = await CommandService.AddModulesAsync(this.GetType().GetTypeInfo().Assembly);
+
+            //unload modules which are not available on the public bot
+
+            Ready.TrySetResult(true);
+            HandleStatusChanges();
+            StartSendingData();
+            _log.Info($"Shard {Client.ShardId} ready.");
+        }
+        */
+        #endregion
         public async Task RunAsync()
         {
             await _discord.ConnectAsync().ConfigureAwait(false);
@@ -346,5 +420,74 @@ namespace Core_Discord
             }
             catch (Exception) { }
         }
+        /*
+        //running out of time
+        private void AddServices()
+        {
+            var startingGuildIdList = _discord.Guilds.Select(x => (long)x.Value.Id).ToList();
+
+            //this unit of work will be used for initialization of all modules too, to prevent multiple queries from running
+            using (var uow = _db.UnitOfWork)
+            {
+
+                IBotConfigProvider botConfigProvider = new BotConfigProvider(_db, _config);
+
+                //initialize Services
+                Services = new CoreServiceProvider()
+                    .AddManual<CoreCredentials>(Credentials)
+                    .AddManual(_db)
+                    .AddManual(_discord)
+                    .AddManual(botConfigProvider)
+                    .AddManual<Core>(this)
+                    .AddManual<IUnitOfWork>(uow);
+
+                Services.LoadFrom(Assembly.GetAssembly(typeof(CommandHandler)));
+
+                var commandHandler = Services.GetService<CommandHandler>();
+                commandHandler.AddServices(Services);
+
+                LoadTypeReaders(typeof(NadekoBot).Assembly);
+            }
+            Services.Unload(typeof(IUnitOfWork)); // unload it after the startup
+        }
+
+        private IEnumerable<object> LoadTypeReaders(Assembly assembly)
+        {
+            Type[] allTypes;
+            try
+            {
+                allTypes = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                Console.WriteLine(ex.LoaderExceptions[0]);
+                return Enumerable.Empty<object>();
+            }
+            var filteredTypes = allTypes
+                .Where(x => x.IsSubclassOf(typeof(TypeReader))
+                    && x.BaseType.GetGenericArguments().Length > 0
+                    && !x.IsAbstract);
+
+            var toReturn = new List<object>();
+            foreach (var ft in filteredTypes)
+            {
+                var x = (TypeReader)Activator.CreateInstance(ft, Client, CommandService);
+                var baseType = ft.BaseType;
+                var typeArgs = baseType.GetGenericArguments();
+                try
+                {
+                    CommandService.AddTypeReader(typeArgs[0], x);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex);
+                    throw;
+                }
+                toReturn.Add(x);
+            }
+
+            return toReturn;
+        }
+        */
     }
 }

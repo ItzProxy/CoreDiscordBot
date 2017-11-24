@@ -12,24 +12,34 @@ namespace Core_Discord
 {
     internal sealed class Program
     {
-        static public IConfigurationRoot Configuration { get; set; }
-        public static void Main(string[] arg)
-        {
-            try
-            {
-                MainAsync().Wait();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"There was an exception: {ex.ToString()}");
-            }
-        }
+        //public static void Main(string[] arg)
+        //{
+            //trying to truely multi thread, but decided to just make it so the OS does the threading
+            //            if (arg.Length == 2
+            //                && int.TryParse(arg[0], out int shardId)
+            //                && int.TryParse(arg[1], out int parentProcessId))
+            //            {
+            //                return new Core(shardId, parentProcessId)
+            //                    .RunAndBlockAsync(args);
+            //            }
+            //            else
+            //            {
+            //#if DEBUG
+            //                var _ = new Core(0, Process.GetCurrentProcess().Id)
+            //                       .RunAsync(arg);
+            //#endif
+            //                return new ShardsCoordinator()
+            //                    .RunAndBlockAsync();
+            //            }
+        //}
+        public static void Main(string[] args)
+        => MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
         /// <summary>
         /// Provides the main way to instaniate the bot
         /// This will have to take in a List using a built in scheduler to make it possible to run multiple bots form one instance
         /// </summary>
         /// <returns></returns>
-        public static async Task MainAsync()
+        public static async Task MainAsync(string[] args)
         {
 
             var config = new CoreConfig();
@@ -53,6 +63,7 @@ namespace Core_Discord
             {
                 var bot = new Core(Process.GetCurrentProcess().Id, i);
                 tasklist.Add(bot.RunAsync());
+                await Task.Delay(7500).ConfigureAwait(false);
             }
             await Task.WhenAll(tasklist).ConfigureAwait(false);
 

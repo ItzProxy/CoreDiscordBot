@@ -9,22 +9,32 @@ using DSharpPlus.VoiceNext;
 using DSharpPlus.EventArgs;
 using Core_Discord.CoreServices;
 using DSharpPlus.Entities;
+using Core_Discord.CoreExtensions.ConcurrentCollections;
+using static Core_Discord.CoreMusic.CoreMusicExceptions;
+using DSharpPlus.CommandsNext;
+using Core_Discord.CoreDatabase.Models;
+using Core_Discord.CoreMusic.ResolveStrats;
+using System.Linq;
+using Core_Discord.CoreExtensions;
 
 namespace Core_Discord.CoreMusic
 {
     public class CoreMusicService : IUnloadableService, CoreService
     {
         public const string MusicPath = "data/music";
-        private readonly IGoogleApiService apiService;
+        private readonly IGoogleApiService _google;
         private readonly DbService _db;
         private readonly Logger _log;
         private ICoreCredentials _cred;
         private readonly ConcurrentDictionary<long, float> _defaultVolumes;
         private readonly object locker = new object();
 
-        public ConcurrentBag<long> GuildDc;
+        public ConcurrentHashSet<long> GuildDc;
 
         private readonly DiscordClient _client;
+        private DiscordClient _discord;
+        private CoreCredentials credentials;
+        private IGoogleApiService googleApiService;
 
         public ConcurrentDictionary<long, CoreMusicPlayer> MusicPlayers { get; } = new ConcurrentDictionary<long, CoreMusicPlayer>();
 
@@ -36,7 +46,7 @@ namespace Core_Discord.CoreMusic
             Core core,
             IGoogleApiService google)
         {
-            apiService = google;
+            _google = google;
             _client = client;
             _db = db;
             _cred = cred;
@@ -49,6 +59,7 @@ namespace Core_Discord.CoreMusic
                 Directory.CreateDirectory(MusicPath);
             }
         }
+
         public float GetDefaultVolume(long guildId)
         {
             return _defaultVolumes.GetOrAdd(guildId, (id) =>
@@ -59,53 +70,145 @@ namespace Core_Discord.CoreMusic
                 }
             });
         }
-        //setup based on user 
-        //public async Task<CoreMusicPlayer> GetOrCreatePlayer(CommandContext e)
-        //{
-        //    var gUsr = e.User;
-        //    var txtCh = e.Channel;
-        //    var vCh = e.Member?.VoiceState?.Channel;
-        //    if(vCh == null)
-        //    {
-        //        _log.Warn($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one");
-        //        await e.RespondAsync($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one").ConfigureAwait(false);
-        //        throw new NotInVOiceChannelException();
-        //    }
-        //    var vnc = await vCh.ConnectAsync().ConfigureAwait(false);
-        //    return (await GetOrCreatePlayer(e.Guild.Id, vnc, txtCh));
-        //}
-        //public async Task<CoreMusicPlayer> GetOrCreatePlayer(ulong guild, VoiceNextConnection voiceNext, DiscordChannel textChan)
-        //{
-        //    //return await MusicPlayers.GetOrAdd(guild, _ =>
-        //    //{
-        //    //    float vol = 1.0f;
-        //    //    var avc = voiceNext.Channel;
-        //    //    var mp = new CoreMusicPlayer(voiceNext, textChan, apiService, vol, this);
+        //setup based on user
+        public async Task<CoreMusicPlayer> GetOrCreatePlayer(CommandContext e)
+        {
+            var gUsr = e.User;
+            var txtCh = e.Channel;
+            var vCh = e.Member?.VoiceState?.Channel;
+            if (vCh == null)
+            {
+                _log.Warn($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one");
+                await e.RespondAsync($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one").ConfigureAwait(false);
+                throw new NotInVoiceChannelException();
+            }
 
-        //    //    DiscordMessage playingMesage = null;
-        //    //    DiscordMessage lastFinishedMessage = null;
+            var vnc = await vCh.ConnectAsync();
+            var nvc = vnc;
+            return (await GetOrCreatePlayer(e.Guild.Id, nvc, txtCh));
+        }
+        public async Task<CoreMusicPlayer> GetOrCreatePlayer(ulong guild, VoiceNextConnection voiceNext, DiscordChannel textChan)
+        {
+            return MusicPlayers.GetOrAdd((long)guild, _ =>
+            {
+                float vol = 1.0f;
+                var avc = voiceNext.Channel;
+                var mp = new CoreMusicPlayer(voiceNext.Channel, textChan, _google, vol, this);
 
-        //    //    //add implementation for event trigger
-        //    //    mp.OnCompleted += (s, song) =>
-        //    //    {
-        //    //        lastFinishedMessage?.DeleteAsync();
-        //    //        try
-        //    //        {
+                DiscordMessage playingMessage = null;
+                DiscordMessage lastFinishedMessage = null;
 
-        //    //        }
-        //    //        catch { }
-        //    //    };
+                //add implementation for event trigger
+                mp.OnCompleted += async (s, song) =>
+                {
+                    try
+                    {
+                        await lastFinishedMessage?.DeleteAsync();
+                        try
+                        {
+                            lastFinishedMessage = await mp.TextChannel.SendMessageAsync(embed: new DiscordEmbedBuilder()
+                                .WithColor(DiscordColor.Blue)
+                                .WithAuthor("Finished Song", song.FormattedFullName)
+                                .WithDescription(song.FormattedName)
+                                .WithFooter(song.FormattedInfo))
+                                .ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            var cur = mp.Current;
+                            if (cur.Current == null
+                                && !mp.RepeatCurrentSong
+                                && !mp.RepeatPlaylist)
+                            {
+                                await DestroyPlayer((long)guild).ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    catch
+                    {
 
-        //    //});
-        //    return 
-        //}
+                    }
+                };
+
+                mp.OnStarted += async (player, song) =>
+                {
+                    var sender = player;
+                    if (sender == null)
+                    {
+                        return;
+                    }
+                    try
+                    {
+                        await playingMessage?.DeleteAsync();
+
+                        playingMessage = await mp.TextChannel.SendMessageAsync(embed: new DiscordEmbedBuilder().WithColor(DiscordColor.Blue)
+                                                    .WithAuthor($"Playing - {song.Index + 1}", song.Song.SongUrl)
+                                                    .WithDescription(song.Song.FormattedName)
+                                                    .WithFooter($"{mp.Volume} | {song.Song.FormattedInfo}"))
+                                                    .ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                };
+                mp.OnPauseChanged += async (player, paused) =>
+                {
+                    try
+                    {
+                        DiscordMessage msg;
+                        if (paused)
+                        {
+                            msg = await mp.TextChannel.SendMessageAsync("paused").ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            msg = await mp.TextChannel.SendMessageAsync("resumed").ConfigureAwait(false);
+                        }
+                        msg?.DeleteAsync();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                };
+                _log.Info("Done creating");
+                return mp;
+            });
+        }
         public CoreMusicPlayer GetPlayerOrDefault(long guildId)
         {
-            throw new NotImplementedException();
+            if (MusicPlayers.TryGetValue(guildId, out var mp))
+                return mp;
+            else
+                return null;
         }
-        public async Task TryQueueRelatedSongAsync(MusicInfo song, DiscordChannel textChan, VoiceNextExtension vch)
+        public async Task TryQueueRelatedSongAsync(MusicInfo song, DiscordChannel textChan, VoiceNextConnection vch)
         {
-            throw new NotImplementedException();
+            var related = (await _google.GetRelatedVideosAsync(song.VideoId, 4)).ToArray();
+            if (!related.Any())
+                return;
+
+            var si = await ResolveSong(related[new Random().Next(related.Length)], _client.CurrentUser.ToString(), MusicType.YouTube);
+            if (si == null)
+                throw new SongNotFoundException();
+            var mp = await GetOrCreatePlayer(textChan.GuildId, vch, textChan);
+            mp.Enqueue(si);
+        }
+        public async Task<MusicInfo> ResolveSong(string query, string querierName, MusicType? musicType = null)
+        {
+            query.ThrowIfNull(nameof(query));
+
+            ICoreResolver resolverFactory = new CoreResolver();
+            var strategy = await resolverFactory.GetResolveStrategy(query, musicType);
+            var sinfo = await strategy.ResolveSong(query);
+
+            if (sinfo == null)
+                return null;
+
+            sinfo.QuerierName = querierName;
+
+            return sinfo;
         }
         //event
         private Task Discord_GuildDeleted(GuildDeleteEventArgs e)

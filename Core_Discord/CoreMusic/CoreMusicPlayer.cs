@@ -13,6 +13,7 @@ using Core_Discord.CoreServices.Interfaces;
 using Core_Discord.Music;
 using Core_Discord.CoreDatabase.Models;
 using System.Diagnostics;
+using System.IO;
 
 /// <summary>
 /// Built using an Outdated Music Player for Discord
@@ -33,15 +34,15 @@ namespace Core_Discord.CoreMusic
         private Logger _log;
         private readonly object locker = new object(); //semaphore
         private readonly Thread _player;
-        public VoiceNextExtension VoiceChannel { get; private set; }
+        public DiscordChannel VoiceChannel { get; private set; }
         public CancellationTokenSource CancellationTokenSource { get; private set; }
         public DiscordChannel TextChannel { get; set; }
         private readonly IGoogleApiService _google;
         private CoreMusicService _musicService;
         //logger
-        
-        private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
 
+        private CoreMusicQueue Queue { get; } = new CoreMusicQueue();
+        private VoiceNextConnection _audioClient;
         private TaskCompletionSource<bool> pauseTaskSource { get; set; } = null;
         public bool Exited { get; set; } = false;
         public bool Stopped { get; private set; } = false;
@@ -49,7 +50,6 @@ namespace Core_Discord.CoreMusic
         public bool Paused => pauseTaskSource != null;
 
         public string VolumeIcon => $"🔉 {(int)(Volume * 100)}%";
-
         public TimeSpan CurrentTime => TimeSpan.FromSeconds(_bytesSent / (float)_frameBytes / (1000 / _miliseconds));
         public string FormattedCurrentTime
         {
@@ -95,6 +95,18 @@ namespace Core_Discord.CoreMusic
                     : new TimeSpan(songs.Sum(s => s.TotalTime.Ticks));
             }
         }
+        //More player options
+        public bool AutoDelete { get; set; }
+        public uint MaxPlaytimeSeconds { get; set; }
+        public bool RepeatCurrentSong { get; private set; }
+        public bool Shuffle { get; private set; }
+        public bool Autoplay { get; private set; }
+        public bool RepeatPlaylist { get; private set; } = false;
+        public uint MaxQueueSize
+        {
+            get => Queue.MaxQueueSize;
+            set { lock (locker) Queue.MaxQueueSize = value; }
+        }
         /// <summary>
         /// getter for <int,MusicInfo>
         /// </summary>
@@ -108,7 +120,7 @@ namespace Core_Discord.CoreMusic
             }
         }
 
-        public CoreMusicPlayer(VoiceNextExtension voice, DiscordChannel textChan, IGoogleApiService googleApiService, float volume, CoreMusicService musicService)
+        public CoreMusicPlayer(DiscordChannel voice, DiscordChannel textChan, IGoogleApiService googleApiService, float volume, CoreMusicService musicService)
         {
             _log = LogManager.GetCurrentClassLogger();
             Volume = volume;
@@ -140,72 +152,324 @@ namespace Core_Discord.CoreMusic
                 if (data.song != null)
                 {
                     _log.Info($"Starting Player for {TextChannel.Name}");
-                    CoreMusicHelper buffer = null;
+                    CoreMusicHelper seed = null;
                     //try to get voice 
                     try
                     {
-                        buffer = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
-
+                        seed = new CoreMusicHelper(await data.song.Url(), "", data.song.ProviderType == MusicType.Local);
+                        _log.Info("Getting voice connection");
+                        var ac = await GetVoiceNextConnection();
+                        _log.Info("Got voice connection");
+                        if (ac == null)
+                        {
+                            _log.Info("Couldn't join");
+                            await TextChannel.SendMessageAsync("Music Player cannot join your voice channel");
+                            await Task.Delay(900, cancellationToken);
+                            continue;
+                        }
+                        _log.Info("Created pcm stream");
+                        OnStarted?.Invoke(this, data);
+                        //using (var ms = new MemoryStream())//hold info if buffer dies on us
+                        //{
+                        //await seed.outbuf.CopyToAsync(ms).ConfigureAwait(false);
+                        var buffer = new byte[3840];
+                        var bytesRead = 0;
+                        while ((bytesRead = seed.Read(buffer, 0, buffer.Length)) > 0
+                            && (MaxPlaytimeSeconds <= 0 || MaxPlaytimeSeconds >= CurrentTime.TotalSeconds))
+                        {
+                            AdjustVolume(buffer, Volume);
+                            if (bytesRead < buffer.Length)
+                            {
+                                for (var i = bytesRead; i < buffer.Length; i++)
+                                {
+                                    buffer[i] = 0; //just incase the current play time is somehow larger than what we have
+                                }
+                            }
+                            await ac.SendAsync(buffer, 20).ConfigureAwait(false);
+                            unchecked { _bytesSent += bytesRead; }
+                            await (pauseTaskSource?.Task ?? Task.CompletedTask);
+                        }
+                        //}
                     }
-                    catch
+                    catch (OperationCanceledException)
                     {
+                        _log.Info("Song Cancelled");
+                        cancel = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Warn(ex);
+                    }
+                    finally
+                    {
+                        if (seed != null)
+                        {
+                            seed.Dispose();
+                        }
+                        OnCompleted?.Invoke(this, data.song);
+                        if (_bytesSent == 0 && !cancel)
+                        {
+                            lock (locker)
+                            {
+                                Queue.RemoveSong(data.song);
+                                _log.Info("Removed song because it cannot be played");
+                            }
+                        }
+                    }
+                    try
+                    {
+                        //repeat song because we can't do anything else
+                        int queueCount;
+                        bool stopped;
+                        int currentIndex;
+                        lock (locker)
+                        {
+                            queueCount = Queue.Count;
+                            stopped = Stopped;
+                            currentIndex = Queue.CurrIndex;
+                        }
+                        if (AutoDelete && !RepeatCurrentSong && !RepeatPlaylist && data.song != null)
+                        {
+                            Queue.RemoveSong(data.song);
+                        }
+
+                        if (!manualIndex && (!RepeatCurrentSong || manualSkip))
+                        {
+                            if (Shuffle)
+                            {
+                                _log.Info("Random song");
+                                Queue.Random(); //if shuffle is set, set current song index to a random number
+                            }
+                            else
+                            {
+                                //if last song, and autoplay is enabled, and if it's a youtube song
+                                // do autplay magix
+                                if (queueCount - 1 == data.Index && Autoplay && data.song?.ProviderType == MusicType.YouTube)
+                                {
+                                    try
+                                    {
+                                        _log.Info("Loading related song");
+                                        await TextChannel.SendMessageAsync("Loading related song");
+                                        await _musicService.TryQueueRelatedSongAsync(data.song, TextChannel, await VoiceChannel.ConnectAsync());
+                                        if (!AutoDelete)
+                                            Queue.Next();
+                                    }
+                                    catch
+                                    {
+                                        _log.Info("Loading related song failed.");
+                                        await TextChannel.SendMessageAsync("Loading related song failed.");
+                                    }
+                                }
+                                else if (queueCount - 1 == data.Index && !RepeatPlaylist && !manualSkip)
+                                {
+                                    _log.Info("Stopping because repeatplaylist is disabled");
+                                    await TextChannel.SendMessageAsync("Next Song");
+                                    lock (locker)
+                                    {
+                                        Stop();
+                                    }
+                                }
+                                else
+                                {
+                                    _log.Info("Next song");
+                                    await TextChannel.SendMessageAsync("Next Song");
+                                    lock (locker)
+                                    {
+                                        if (!Stopped)
+                                            if (!AutoDelete)
+                                                Queue.Next();
+                                    }
+                                }
+                            }
+
+                        }
 
                     }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex);
+                    }
+                    do
+                    {
+                        await Task.Delay(500); //repeate process until Queue is empty or player is stopped
+                    }
+                    while ((Queue.Count == 0 || Stopped) && !Exited);
                 }
-
             }
         }
         //private async Task<VoiceNextExtension> GetVoiceNextExtensionAsync(bool reconnect = false)
         //{
         //    VoiceChannel.GetConnection(TextChannel.GuildId());
         //}
+        private async Task<VoiceNextConnection> GetVoiceNextConnection(bool reconnect = false)
+        {
+            if (_audioClient == null ||
+                _audioClient.IsPlaying ||
+                reconnect ||
+                newVoiceChannel)
+                try
+                {
+                    try
+                    {
+                        //check if instance is still available
+                        var t = _audioClient?.IsPlaying;
+                        if (t != null)
+                        {
 
+                            _log.Info("Stopping audio client");
+                            _log.Info("Disposing audio client");
+                            _audioClient.Dispose();
+                        }
+                    }
+                    catch
+                    {
+                    }
+                    newVoiceChannel = false;
+
+                    var curUser = VoiceChannel.Guild.CurrentMember;
+                    if (curUser?.VoiceState?.Channel != null)
+                    {
+                        _log.Info("Connecting");
+                        var ac = await VoiceChannel.ConnectAsync();
+                        _log.Info("Connected, stopping");
+                        _log.Info("Disconnected");
+                        ac.Disconnect();
+                        await Task.Delay(1000);
+                    }
+                    _log.Info("Connecting");
+                    _audioClient = await VoiceChannel.ConnectAsync();
+                }
+                catch
+                {
+                    return null;
+                }
+            return _audioClient;
+        }
         public MusicInfo MoveSong(int n1, int n2)
             => Queue.MoveSong(n1, n2);
-        private async void PlayerLoop()
-        {
-            throw new NotImplementedException();
-        }
 
         public int Enqueue(MusicInfo song)
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                if (Exited)
+                    return -1;
+                Queue.Add(song);
+                return Queue.Count - 1;
+            }
         }
         public int EnqueueNext(MusicInfo song)
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                if (Exited)
+                    return -1;
+                return Queue.AddNext(song);
+            }
         }
         public void SetIndex(int index)
         {
-            throw new NotImplementedException();
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            lock (locker)
+            {
+                if (Exited)
+                    return;
+                if (AutoDelete && index >= Queue.CurrIndex && index > 0)
+                    index--;
+                Queue.CurrIndex = index;
+                manualIndex = true;
+                Stopped = false;
+                CancelCurrentSong();
+            }
         }
         public void Next(int skipCount = 1)
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                if (Exited)
+                    return;
+                manualSkip = true;
+                // if player is stopped, and user uses .n, it should play current song.  
+                // It's a bit weird, but that's the least annoying solution
+                if (!Stopped)
+                    if (!RepeatPlaylist && Queue.IsLast()) // if it's the last song in the queue, and repeat playlist is disabled
+                    { //stop the queue
+                        Stop();
+                        return;
+                    }
+                    else
+                        Queue.Next(skipCount - 1);
+                else
+                    Queue.CurrIndex = 0;
+                Stopped = false;
+                CancelCurrentSong();
+                Unpause();
+            }
         }
         public void Stop(bool clearQueue = false)
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                Stopped = true;
+                if (clearQueue)
+                    Queue.Clear();
+                Unpause();
+                CancelCurrentSong();
+            }
         }
         private void Unpause()
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                if (pauseTaskSource != null)
+                {
+                    pauseTaskSource.TrySetResult(true);
+                    pauseTaskSource = null;
+                }
+            }
         }
         public void TogglePause()
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                if (pauseTaskSource == null)
+                    pauseTaskSource = new TaskCompletionSource<bool>();
+                else
+                {
+                    Unpause();
+                }
+            }
+            OnPauseChanged?.Invoke(this, pauseTaskSource != null);
         }
         public void SetVolume(float volume)
         {
-            throw new NotImplementedException();
+            if (volume < 0 || volume > 100)
+                throw new ArgumentOutOfRangeException(nameof(volume));
+            lock (locker)
+            {
+                Volume = ((float)volume) / 100;
+            }
         }
         public MusicInfo RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                var cur = Queue.Current;
+                var toReturn = Queue.RemoveAt(index);
+                if (cur.Index == index)
+                    Next();
+                return toReturn;
+            }
         }
         private void CancelCurrentSong()
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                var cs = CancellationTokenSource;
+                CancellationTokenSource = new CancellationTokenSource();
+                cs.Cancel();
+            }
         }
         public void ClearQueue()
         {
@@ -241,31 +505,43 @@ namespace Core_Discord.CoreMusic
         }
         public bool ToggleRepeatSong()
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                return RepeatCurrentSong = !RepeatCurrentSong;
+            }
         }
         public bool ToggleShuffle()
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                return Shuffle = !Shuffle;
+            }
         }
 
         public bool ToggleAutoplay()
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                return Autoplay = !Autoplay;
+            }
         }
         public bool ToggleRepeatPlaylist()
         {
-            throw new NotImplementedException();
+            lock (locker)
+            {
+                return RepeatPlaylist = !RepeatPlaylist;
+            }
         }
 
-        public async Task SetVoiceChannel(VoiceNextExtension vch)
+        public async Task SetVoiceChannel(DiscordChannel vch)
         {
             lock (locker)
             {
                 if (Exited)
                     return;
-                //VoiceChannel = vch;
+                VoiceChannel = vch;
             }
-            // _audioClient = await vch.ConnectAsync(VoiceChannel);
+            _audioClient = await vch.ConnectAsync();
         }
         //taken from music module.py from
         public async Task UpdateSongDurationsAsync()
@@ -304,7 +580,8 @@ namespace Core_Discord.CoreMusic
                 OnPauseChanged = null;
                 OnStarted = null;
             }
-            await VoiceChannel.Client.DisconnectAsync(); //disconnect
+            var nvc = await GetVoiceNextConnection();//disconnect
+            nvc.Disconnect();
             await Task.CompletedTask;
         }
     }
