@@ -14,6 +14,8 @@ using static Core_Discord.CoreServices.CoreModules;
 using System.Linq;
 using Core_Discord.CoreDatabase.Models;
 using NLog;
+using System.Collections.Generic;
+
 namespace Core_Discord.CoreMusic
 {
 
@@ -48,7 +50,7 @@ namespace Core_Discord.CoreMusic
             if (songInfo == null)
             {
                 if (!silent)
-                    await mp.TextChannel.SendMessageAsync("song_not_found").ConfigureAwait(false);
+                    await mp.TextChannel.SendMessageAsync("Song was not found").ConfigureAwait(false);
                 return;
             }
 
@@ -61,7 +63,7 @@ namespace Core_Discord.CoreMusic
             }
             catch (QueueFullException)
             {
-                await mp.TextChannel.SendMessageAsync("queue_full").ConfigureAwait(false);
+                await mp.TextChannel.SendMessageAsync("Queue is currently full").ConfigureAwait(false);
                 throw;
             }
             if (index != -1)
@@ -86,7 +88,7 @@ namespace Core_Discord.CoreMusic
                         {
                             await mp.TextChannel.SendMessageAsync($"Queue Stopped - Use play to add a song to queue").ConfigureAwait(false); 
                         }
-                        await queuedMessage?.DeleteAsync();
+                        //await queuedMessage?.DeleteAsync();
                     }
                     catch
                     {
@@ -168,7 +170,7 @@ namespace Core_Discord.CoreMusic
                     AuthorId = (long)e.User.Id,
                     Songs = songs.ToList(),
                 };
-                uow.
+                uow
                 await uow.CompleteAsync().ConfigureAwait(false);
             }
 
@@ -210,14 +212,14 @@ namespace Core_Discord.CoreMusic
         }
         [Command("play")]
         [Description("plays music of the given url")]
-        public async Task Play(CommandContext e, params string[] query)
+        public async Task Play(CommandContext e, string query = null)
         {
-            var mp = await _service.GetOrCreatePlayer(e);
-            if (string.IsNullOrWhiteSpace(query[0]))
+            var mp = await _service.GetOrCreatePlayer(e); //get current player
+            if (string.IsNullOrWhiteSpace(query)) //check if query is possible
             {
                 await Next(e);
             }
-            else if (int.TryParse(query[0], out var index))
+            else if (int.TryParse(query, out var index))
                 if (index >= 1)
                     mp.SetIndex(index - 1);
                 else
@@ -230,7 +232,47 @@ namespace Core_Discord.CoreMusic
                 }
                 catch { }
             }
-            await e.RespondAsync($"Not yet implemented yet").ConfigureAwait(false);
+        }
+
+        [Command("listqueue")]
+        [Description("List the contents of the queue")]
+        [Aliases("lq")]
+        public async Task ShowQueue(CommandContext e, int page = 0)
+        {
+            var interactivity = e.Client.GetInteractivity();
+            var mp = await _service.GetOrCreatePlayer(e);
+            var (current, songs) = mp.QueueArray();
+
+            //if queue empty
+            if (!songs.Any())
+            {
+                await e.RespondAsync("Player not available").ConfigureAwait(false);
+                return;
+            }
+            //error checking
+            if (--page < -1)
+                return;
+
+            try
+            {
+                await mp.UpdateSongDurationsAsync().ConfigureAwait(false);
+            }
+            catch { }
+
+            int itemsPage = 5;
+
+            var total = mp.TotalPlayTime;
+            var totalStr = total == TimeSpan.MaxValue ? "∞" : $"{(int)(total.TotalHours)}:{total.Minutes}:{total.Seconds}";
+            var maxPlaytime = mp.MaxPlaytimeSeconds;
+
+            var mEmbed = new DiscordEmbedBuilder();
+            mEmbed.AddField("Current song", songs[current].FormattedFullName);
+            for(int i = current + 1; i < songs.Count(); i++)
+            {
+                mEmbed.AddField("In queue - ", songs[i].FormattedName);
+            }
+            await e.RespondAsync(embed: mEmbed);
+   
         }
     }
 }

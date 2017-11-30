@@ -338,7 +338,11 @@ namespace Core_Discord
         private async Task CommandsNextService_CommandErrored(CommandErrorEventArgs e)
         {
             if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
+            {
+                await e.Context.RespondAsync($"Command does not exist...refer to '{e.Context.Prefix}help'");
                 return;
+            }
+
 
             _discord.DebugLogger.LogMessage(DSharpPlus.LogLevel.Error, "CommandsNext", $"An exception occured during {e.Context.User.Username}'s invocation of '{e.Context.Command.QualifiedName}': {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 

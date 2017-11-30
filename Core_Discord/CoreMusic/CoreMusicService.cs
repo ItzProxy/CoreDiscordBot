@@ -16,6 +16,7 @@ using Core_Discord.CoreDatabase.Models;
 using Core_Discord.CoreMusic.ResolveStrats;
 using System.Linq;
 using Core_Discord.CoreExtensions;
+using DSharpPlus.CommandsNext.Attributes;
 
 namespace Core_Discord.CoreMusic
 {
@@ -76,28 +77,37 @@ namespace Core_Discord.CoreMusic
             var gUsr = e.User;
             var txtCh = e.Channel;
             var vCh = e.Member?.VoiceState?.Channel;
-            if (vCh == null)
+            //if (vCh == null)
+            //{
+            //    _log.Warn($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one");
+            //    await e.RespondAsync($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one").ConfigureAwait(false);
+            //    throw new NotInVoiceChannelException();
+            //}
+            var vnext = e.Client.GetVoiceNext();
+            //if (vnext == null){
+            //    await e.RespondAsync("Already in guild");
+            //}
+            //var vnc = await vCh.ConnectAsync().ConfigureAwait(false);
+            //await txtCh.SendMessageAsync($"Trying to join `{vCh.Name}` ({vCh.Id})").ConfigureAwait(false);
+            return await GetOrCreatePlayer(e.Guild.Id, txtCh, vCh);
+        }
+        public async Task<CoreMusicPlayer> GetOrCreatePlayer(ulong guild, DiscordChannel textChan, DiscordChannel voiceChan)
+        {
+            if (voiceChan == null || voiceChan.Guild != textChan.Guild)
             {
-                _log.Warn($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one");
-                await e.RespondAsync($"Voice channel not found or {e.User.Username + e.User.Discriminator} is not connected to one").ConfigureAwait(false);
+                if (textChan != null)
+                {
+                    await textChan.SendMessageAsync("Not in voice").ConfigureAwait(false);
+                }
                 throw new NotInVoiceChannelException();
             }
-
-            var vnc = await vCh.ConnectAsync();
-            var nvc = vnc;
-            return (await GetOrCreatePlayer(e.Guild.Id, nvc, txtCh));
-        }
-        public async Task<CoreMusicPlayer> GetOrCreatePlayer(ulong guild, VoiceNextConnection voiceNext, DiscordChannel textChan)
-        {
             return MusicPlayers.GetOrAdd((long)guild, _ =>
             {
                 float vol = 1.0f;
-                var avc = voiceNext.Channel;
-                var mp = new CoreMusicPlayer(voiceNext.Channel, textChan, _google, vol, this);
+                var mp = new CoreMusicPlayer(voiceChan, textChan, _google, vol, this);
 
                 DiscordMessage playingMessage = null;
                 DiscordMessage lastFinishedMessage = null;
-
                 //add implementation for event trigger
                 mp.OnCompleted += async (s, song) =>
                 {
@@ -183,17 +193,17 @@ namespace Core_Discord.CoreMusic
             else
                 return null;
         }
-        public async Task TryQueueRelatedSongAsync(MusicInfo song, DiscordChannel textChan, VoiceNextConnection vch)
+        public async Task TryQueueRelatedSongAsync(MusicInfo song, DiscordChannel textChan, DiscordChannel vch)
         {
             var related = (await _google.GetRelatedVideosAsync(song.VideoId, 4)).ToArray();
             if (!related.Any())
                 return;
 
-            var si = await ResolveSong(related[new Random().Next(related.Length)], _client.CurrentUser.ToString(), MusicType.YouTube);
-            if (si == null)
+            var mi = await ResolveSong(related[new Random().Next(related.Length)], _client.CurrentUser.ToString(), MusicType.YouTube);
+            if (mi == null)
                 throw new SongNotFoundException();
             var mp = await GetOrCreatePlayer(textChan.GuildId, vch, textChan);
-            mp.Enqueue(si);
+            mp.Enqueue(mi);
         }
         public async Task<MusicInfo> ResolveSong(string query, string querierName, MusicType? musicType = null)
         {

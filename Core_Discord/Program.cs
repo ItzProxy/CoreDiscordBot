@@ -59,7 +59,7 @@ namespace Core_Discord
             config = JsonConvert.DeserializeObject<CoreConfig>(json);
 
             var tasklist = new List<Task>();
-            for(var i = 0; i < config.ShardCount; i++)
+            for(var i = 0; i < config.ShardCount+1; i++)
             {
                 var bot = new Core(Process.GetCurrentProcess().Id, i);
                 tasklist.Add(bot.RunAsync());

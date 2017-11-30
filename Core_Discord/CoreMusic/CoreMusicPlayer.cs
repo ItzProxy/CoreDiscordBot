@@ -14,6 +14,7 @@ using Core_Discord.Music;
 using Core_Discord.CoreDatabase.Models;
 using System.Diagnostics;
 using System.IO;
+using DSharpPlus.CommandsNext;
 
 /// <summary>
 /// Built using an Outdated Music Player for Discord
@@ -29,7 +30,7 @@ namespace Core_Discord.CoreMusic
         Playing,
         Completed
     }
-    public partial class CoreMusicPlayer
+    public partial class CoreMusicPlayer : IDisposable
     {
         private Logger _log;
         private readonly object locker = new object(); //semaphore
@@ -151,7 +152,7 @@ namespace Core_Discord.CoreMusic
 
                 if (data.song != null)
                 {
-                    _log.Info($"Starting Player for {TextChannel.Name}");
+                    _log.Info($"Starting Player for {VoiceChannel.Name}");
                     CoreMusicHelper seed = null;
                     //try to get voice 
                     try
@@ -170,25 +171,25 @@ namespace Core_Discord.CoreMusic
                         _log.Info("Created pcm stream");
                         OnStarted?.Invoke(this, data);
                         //using (var ms = new MemoryStream())//hold info if buffer dies on us
-                        //{
-                        //await seed.outbuf.CopyToAsync(ms).ConfigureAwait(false);
-                        var buffer = new byte[3840];
-                        var bytesRead = 0;
-                        while ((bytesRead = seed.Read(buffer, 0, buffer.Length)) > 0
-                            && (MaxPlaytimeSeconds <= 0 || MaxPlaytimeSeconds >= CurrentTime.TotalSeconds))
-                        {
-                            AdjustVolume(buffer, Volume);
-                            if (bytesRead < buffer.Length)
+                       // {
+                            //await seed.outbuf.CopyToAsync(ms).ConfigureAwait(false);
+                            var buffer = new byte[3840];
+                            var bytesRead = 0;
+                            while ((bytesRead = seed.Read(buffer, 0, buffer.Length)) > 0
+                                && (MaxPlaytimeSeconds <= 0 || MaxPlaytimeSeconds >= CurrentTime.TotalSeconds))
                             {
-                                for (var i = bytesRead; i < buffer.Length; i++)
+                                AdjustVolume(buffer, Volume);
+                                if (bytesRead < buffer.Length)
                                 {
-                                    buffer[i] = 0; //just incase the current play time is somehow larger than what we have
+                                    for (var i = bytesRead; i < buffer.Length; i++)
+                                    {
+                                        buffer[i] = 0; //just incase the current play time is somehow larger than what we have 
+                                    }
                                 }
+                                await ac.SendAsync(buffer, 20).ConfigureAwait(false);
+                                unchecked { _bytesSent += bytesRead; }
+                                await (pauseTaskSource?.Task ?? Task.CompletedTask);
                             }
-                            await ac.SendAsync(buffer, 20).ConfigureAwait(false);
-                            unchecked { _bytesSent += bytesRead; }
-                            await (pauseTaskSource?.Task ?? Task.CompletedTask);
-                        }
                         //}
                     }
                     catch (OperationCanceledException)
@@ -250,7 +251,7 @@ namespace Core_Discord.CoreMusic
                                     {
                                         _log.Info("Loading related song");
                                         await TextChannel.SendMessageAsync("Loading related song");
-                                        await _musicService.TryQueueRelatedSongAsync(data.song, TextChannel, await VoiceChannel.ConnectAsync());
+                                        await _musicService.TryQueueRelatedSongAsync(data.song, TextChannel, VoiceChannel);
                                         if (!AutoDelete)
                                             Queue.Next();
                                     }
@@ -312,11 +313,11 @@ namespace Core_Discord.CoreMusic
                     try
                     {
                         //check if instance is still available
-                        var t = _audioClient?.IsPlaying;
+                        var t =_audioClient?.WaitForPlaybackFinishAsync();
                         if (t != null)
                         {
-
                             _log.Info("Stopping audio client");
+                            await t;
                             _log.Info("Disposing audio client");
                             _audioClient.Dispose();
                         }
@@ -325,17 +326,16 @@ namespace Core_Discord.CoreMusic
                     {
                     }
                     newVoiceChannel = false;
-
-                    var curUser = VoiceChannel.Guild.CurrentMember;
-                    if (curUser?.VoiceState?.Channel != null)
-                    {
-                        _log.Info("Connecting");
-                        var ac = await VoiceChannel.ConnectAsync();
-                        _log.Info("Connected, stopping");
-                        _log.Info("Disconnected");
-                        ac.Disconnect();
-                        await Task.Delay(1000);
-                    }
+                    //var curUser = await VoiceChannel.Guild.GetChannel
+                    //if (curUser?.VoiceState?.Channel != null)
+                    //{
+                    //    _log.Info("Connecting");
+                    //    var ac = await VoiceChannel.ConnectAsync();                        
+                    //    _log.Info("Connected, stopping");
+                    //    _log.Info("Disconnected");
+                    //    ac.Disconnect();
+                    //    await Task.Delay(1000);
+                    //}
                     _log.Info("Connecting");
                     _audioClient = await VoiceChannel.ConnectAsync();
                 }
@@ -345,6 +345,7 @@ namespace Core_Discord.CoreMusic
                 }
             return _audioClient;
         }
+
         public MusicInfo MoveSong(int n1, int n2)
             => Queue.MoveSong(n1, n2);
 
@@ -358,6 +359,7 @@ namespace Core_Discord.CoreMusic
                 return Queue.Count - 1;
             }
         }
+
         public int EnqueueNext(MusicInfo song)
         {
             lock (locker)
@@ -407,6 +409,7 @@ namespace Core_Discord.CoreMusic
                 Unpause();
             }
         }
+        //stop playing
         public void Stop(bool clearQueue = false)
         {
             lock (locker)
@@ -580,9 +583,15 @@ namespace Core_Discord.CoreMusic
                 OnPauseChanged = null;
                 OnStarted = null;
             }
-            var nvc = await GetVoiceNextConnection();//disconnect
+            ///var nvc = await GetVoiceNextConnection();//disconnect
+            var nvc = await VoiceChannel.ConnectAsync();
             nvc.Disconnect();
             await Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _audioClient.Disconnect();
         }
     }
 }

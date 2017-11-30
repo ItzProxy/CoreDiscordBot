@@ -16,11 +16,14 @@ namespace Core_Discord
         /// <returns> "Hello " <username> user </username> ". Welcome to Guild</returns>
         [Command("hello")]
         [Description("Says hello")]
-        public async Task HelloWorld(CommandContext e, 
+        public async Task HelloWorld(CommandContext e,
             [Description("the mentioned user")] DiscordUser user = null)
         {
             await e.TriggerTypingAsync();
-
+            if (user == null)
+            {
+                user = e.User;
+            }
             var server = e.Guild.Name;
             var emoji = DiscordEmoji.FromName(e.Client, ":wave:");
 

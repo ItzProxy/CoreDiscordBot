@@ -4,6 +4,7 @@ using System.Text;
 using NLog;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.IO;
 
 namespace Core_Discord.CoreServices
 {
@@ -27,7 +28,7 @@ namespace Core_Discord.CoreServices
                 StartInfo = new ProcessStartInfo()
                 {
                     FileName = "youtube-dl",
-                    Arguments = $"-f bestaudio -e --get-url --get-id --get-thumbnail --get-duration --no-check-certificate --default-search \"ytsearch:\" \"{url}\"",
+                    Arguments = $"-f bestaudio -e --get-url --get-id --get-thumbnail --cache-dir {Path.Combine(Directory.GetCurrentDirectory(),"musiccache")} --get-duration --no-check-certificate --default-search \"ytsearch:\" \"{url}\"",
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
